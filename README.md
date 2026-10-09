@@ -10,8 +10,10 @@ desktop that is redrawn every frame by an immediate-mode UI.
 
 This project was developed using **C++**.
 
-## Usage
-REQUIREMENTS
+## Features
+- N/A
+
+## Requirements
   - Windows 10/11
   - A C++17 compiler. GCC 8 or newer (MinGW-w64 via MSYS2 recommended) or
     MSVC (Visual Studio Build Tools). Old compilers such as the GCC 4.9
@@ -23,7 +25,6 @@ REQUIREMENTS
   - Visual Studio Code with these extensions:
       * C/C++ (Microsoft)
       * CMake Tools (Microsoft)
-
 
 ## Setup
 MSYS2 MinGW-w64 (GCC)
@@ -86,7 +87,7 @@ src/
     X button.
   - To use a custom wallpaper, place a PNG at wallpaper/wallpaper.png (in
     the project root, next to CMakeLists.txt) and restart the program.
-  - To shut down, click the red PWR button in the top-right corner.
+  - To shut down, click the red PWR button in the bottom-left corner.
 
 
 
