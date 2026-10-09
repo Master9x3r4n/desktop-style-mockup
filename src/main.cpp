@@ -6,6 +6,9 @@
 #include "Apps/SystemInfo.h"
 #include "Apps/TaskManager.h"
 #include "Apps/SettingsApp.h"
+#include "Apps/WordleApp.h"
+#include "Apps/AiApp.h"
+#include "Apps/CalculatorApp.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -33,7 +36,6 @@ static void ApplyModernOSTheme() {
     ImGuiStyle& style = ImGui::GetStyle();
     style.ScaleAllSizes(kScale);
 
-    // Modern rounded aesthetics
     style.WindowRounding    = px(10.0f);
     style.FrameRounding     = px(6.0f);
     style.PopupRounding     = px(10.0f);
@@ -91,7 +93,6 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
-    // Exit through the system shutdown button
     glfwSetWindowCloseCallback(window, [](GLFWwindow* w) {
         glfwSetWindowShouldClose(w, GLFW_FALSE);
     });
@@ -105,14 +106,18 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // 1. Desktop background
+        // 1. Desktop background & Desktop Icons
         DrawWallpaper();
+        DrawDesktopIcons(desktop);
 
         // 2. Applications
         if (desktop.showFiles)    DrawFilesWindow(desktop.showFiles);
         if (desktop.showSysInfo)  DrawSysInfoWindow(desktop.showSysInfo);
         if (desktop.showTaskMgr)  DrawTaskManager(desktop.showTaskMgr);
         if (desktop.showSettings) DrawSettingsWindow(desktop);
+        if (desktop.showWordle)   DrawWordleWindow(desktop.showWordle);
+        if (desktop.showAI)       DrawAiWindow(desktop.showAI);
+        if (desktop.showCalc)     DrawCalculatorWindow(desktop.showCalc);
 
         // 3. Taskbar & Start Menu
         DrawTaskbar(desktop);

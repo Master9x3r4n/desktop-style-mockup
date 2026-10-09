@@ -17,12 +17,17 @@ struct Desktop {
     bool showSysInfo = false;
     bool showTaskMgr = false;
     bool showSettings = false;
+    bool showWordle = false;
+    bool showAI = false;
+    bool showCalc = false;
+
     bool startOpen = false;
     bool startJustOpened = false;
     bool startButtonHovered = false;
     bool shutdownRequested = false;
 
-    // Settings
+    // Volume & Settings
+    float masterVolume = 65.0f;
     TaskbarAlignment taskbarAlign = TaskbarAlignment::Center;
     int accentColorIdx = 0; // 0: Sky Blue, 1: Violet, 2: Emerald, 3: Coral
 };

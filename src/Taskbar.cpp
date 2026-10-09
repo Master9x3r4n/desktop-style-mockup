@@ -1,10 +1,10 @@
 #include "Taskbar.h"
 #include <ctime>
 #include <cstdio>
+#include <cfloat>
 
-// Compact modern taskbar button with bottom indicator bar
 static bool TaskbarAppButton(const char* id, const char* label, bool isOpen, int accentIdx) {
-    ImVec2 btnSize(px(64), px(44));
+    ImVec2 btnSize(px(58), px(44));
     
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, px(8.0f));
     ImGui::PushStyleColor(ImGuiCol_Button, isOpen 
@@ -22,12 +22,10 @@ static bool TaskbarAppButton(const char* id, const char* label, bool isOpen, int
     ImVec2 max = ImGui::GetItemRectMax();
     ImDrawList* dl = ImGui::GetWindowDrawList();
 
-    // Subtle outline
     dl->AddRect(min, max, IM_COL32(255, 255, 255, isOpen ? 35 : 15), px(8.0f));
 
-    // Active bottom pill indicator
     if (isOpen) {
-        float indW = px(22.0f);
+        float indW = px(20.0f);
         float indH = px(3.5f);
         float cx = (min.x + max.x) * 0.5f;
         dl->AddRectFilled(
@@ -41,7 +39,6 @@ static bool TaskbarAppButton(const char* id, const char* label, bool isOpen, int
     return clicked;
 }
 
-// Reimagined modern start logo button
 static bool StartMenuButton(Desktop& d) {
     ImVec2 btnSize(px(50), px(44));
 
@@ -63,7 +60,6 @@ static bool StartMenuButton(Desktop& d) {
     ImDrawList* dl = ImGui::GetWindowDrawList();
     dl->AddRect(min, max, IM_COL32(255, 255, 255, d.startOpen ? 45 : 20), px(8.0f));
 
-    // Modern 4-quadrant gradient logo inside start button
     float sz = px(8.5f);
     float gap = px(3.0f);
     float cx = (min.x + max.x) * 0.5f;
@@ -75,15 +71,14 @@ static bool StartMenuButton(Desktop& d) {
     ImVec2 br(cx + gap * 0.5f,      cy + gap * 0.5f);
 
     float r = px(2.5f);
-    dl->AddRectFilled(tl, ImVec2(tl.x + sz, tl.y + sz), IM_COL32(56, 189, 248, 255), r);  // Sky Cyan
-    dl->AddRectFilled(tr, ImVec2(tr.x + sz, tr.y + sz), IM_COL32(37, 99, 235, 255),  r);  // Royal Blue
-    dl->AddRectFilled(bl, ImVec2(bl.x + sz, bl.y + sz), IM_COL32(2, 132, 199, 255),  r);  // Deep Blue
-    dl->AddRectFilled(br, ImVec2(br.x + sz, br.y + sz), IM_COL32(99, 102, 241, 255), r);  // Indigo
+    dl->AddRectFilled(tl, ImVec2(tl.x + sz, tl.y + sz), IM_COL32(56, 189, 248, 255), r);
+    dl->AddRectFilled(tr, ImVec2(tr.x + sz, tr.y + sz), IM_COL32(37, 99, 235, 255),  r);
+    dl->AddRectFilled(bl, ImVec2(bl.x + sz, bl.y + sz), IM_COL32(2, 132, 199, 255),  r);
+    dl->AddRectFilled(br, ImVec2(br.x + sz, br.y + sz), IM_COL32(99, 102, 241, 255), r);
 
     return clicked;
 }
 
-// Pixel-perfect System Tray (Clock, Date, PWR)
 static void DrawSystemTray(Desktop& d, float barWidth, float barHeight) {
     std::time_t now = std::time(nullptr);
     std::tm* lt = std::localtime(&now);
@@ -91,18 +86,65 @@ static void DrawSystemTray(Desktop& d, float barWidth, float barHeight) {
     std::strftime(timeBuf, sizeof(timeBuf), "%I:%M %p", lt);
     std::strftime(dateBuf, sizeof(dateBuf), "%m/%d/%Y", lt);
 
-    float pwrW = px(52);
+    float volW = px(56);
     float clockW = px(120);
+    float pwrW = px(52);
     float elemH = px(44);
     float spacing = px(8);
     float marginR = px(12);
 
-    float totalTrayW = clockW + spacing + pwrW;
+    float totalTrayW = volW + spacing + clockW + spacing + pwrW;
     float startX = barWidth - totalTrayW - marginR;
     float startY = (barHeight - elemH) * 0.5f;
 
-    // 1. Clock & Date Pill Widget
+    // 1. VOL Button
     ImGui::SetCursorPos(ImVec2(startX, startY));
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, px(8.0f));
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.18f, 0.20f, 0.28f, 0.70f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.28f, 0.38f, 0.90f));
+    if (ImGui::Button("VOL", ImVec2(volW, elemH))) {
+        ImGui::OpenPopup("VolumeFlyout");
+    }
+    ImGui::PopStyleColor(2);
+    ImGui::PopStyleVar();
+
+    // Volume Card Popup
+    float flyoutW = px(260.0f);
+    float flyoutX = startX + (volW - flyoutW) * 0.5f;
+    if (flyoutX + flyoutW > barWidth - marginR) {
+        flyoutX = barWidth - marginR - flyoutW;
+    }
+    if (flyoutX < px(12.0f)) flyoutX = px(12.0f);
+
+    ImGui::SetNextWindowPos(ImVec2(flyoutX, ImGui::GetIO().DisplaySize.y - barHeight - px(10.0f)),
+                            ImGuiCond_Always, ImVec2(0.0f, 1.0f));
+    ImGui::SetNextWindowSize(ImVec2(flyoutW, 0.0f));
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, px(12.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(px(16), px(12)));
+    if (ImGui::BeginPopup("VolumeFlyout", ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar)) {
+        ImGui::Text("Volume");
+        ImGui::SameLine(flyoutW - px(80));
+        if (d.masterVolume <= 0.001f) {
+            ImGui::TextColored(ImVec4(0.9f, 0.4f, 0.4f, 1.0f), "Muted");
+        } else {
+            ImGui::TextColored(GetAccentColor(d.accentColorIdx), "%.0f%%", d.masterVolume);
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        ImGui::SetNextItemWidth(-FLT_MIN);
+        ImGui::SliderFloat("##vol_slider", &d.masterVolume, 0.0f, 100.0f, "%.0f%%");
+
+        ImGui::EndPopup();
+    }
+    ImGui::PopStyleVar(2);
+
+    // 2. Clock & Date Pill
+    float clockX = startX + volW + spacing;
+    ImGui::SetCursorPos(ImVec2(clockX, startY));
     ImGui::InvisibleButton("##clock_tray", ImVec2(clockW, elemH));
     bool clockHovered = ImGui::IsItemHovered();
 
@@ -110,11 +152,9 @@ static void DrawSystemTray(Desktop& d, float barWidth, float barHeight) {
     ImVec2 cMax = ImGui::GetItemRectMax();
     ImDrawList* dl = ImGui::GetWindowDrawList();
 
-    // Background pill for clock
     dl->AddRectFilled(cMin, cMax, clockHovered ? IM_COL32(255, 255, 255, 22) : IM_COL32(255, 255, 255, 10), px(8.0f));
     dl->AddRect(cMin, cMax, IM_COL32(255, 255, 255, 18), px(8.0f));
 
-    // Centered vertical layout for Time and Date
     ImVec2 szTime = ImGui::CalcTextSize(timeBuf);
     ImVec2 szDate = ImGui::CalcTextSize(dateBuf);
     float textGap = px(1.0f);
@@ -126,8 +166,9 @@ static void DrawSystemTray(Desktop& d, float barWidth, float barHeight) {
     dl->AddText(ImVec2(cMin.x + (clockW - szDate.x) * 0.5f, textTopY + szTime.y + textGap),
                 IM_COL32(190, 195, 205, 200), dateBuf);
 
-    // 2. Tray PWR Button
-    ImGui::SetCursorPos(ImVec2(startX + clockW + spacing, startY));
+    // 3. Tray PWR Button
+    float pwrX = clockX + clockW + spacing;
+    ImGui::SetCursorPos(ImVec2(pwrX, startY));
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, px(8.0f));
     ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(0.72f, 0.16f, 0.16f, 0.75f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.88f, 0.22f, 0.22f, 0.95f));
@@ -155,7 +196,6 @@ void DrawTaskbar(Desktop& d) {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGui::Begin("##taskbar", nullptr, flags);
 
-    // Top acrylic line
     ImDrawList* dl = ImGui::GetWindowDrawList();
     dl->AddLine(
         ImVec2(0, disp.y - barH),
@@ -164,14 +204,15 @@ void DrawTaskbar(Desktop& d) {
         1.0f
     );
 
-    // Layout configuration
     float elemH = px(44);
     float elemY = (barH - elemH) * 0.5f;
 
     float startW = px(50);
-    float appW = px(64);
-    float spacing = px(8);
-    int appCount = 4; // FILE, SYS, TASK, SETT
+    float appW = px(58);
+    float spacing = px(6);
+
+    // 4 apps on taskbar: SET (Settings), FIL (Files), SYS (System), TSK (Task Manager)
+    int appCount = 4;
     float groupWidth = startW + spacing + (appCount * appW) + ((appCount - 1) * spacing);
 
     float startX = px(12.0f);
@@ -187,29 +228,33 @@ void DrawTaskbar(Desktop& d) {
         d.startJustOpened = d.startOpen;
     }
 
-    // 2. Taskbar App Buttons
+    // 2. Apps in order: Settings, File, System, Task Manager
     float curX = startX + startW + spacing;
 
+    // SET (Settings)
     ImGui::SetCursorPos(ImVec2(curX, elemY));
-    if (TaskbarAppButton("btn_files", "FILE", d.showFiles, d.accentColorIdx))
+    if (TaskbarAppButton("btn_sett", "SET", d.showSettings, d.accentColorIdx))
+        d.showSettings = !d.showSettings;
+    curX += appW + spacing;
+
+    // FIL (Files)
+    ImGui::SetCursorPos(ImVec2(curX, elemY));
+    if (TaskbarAppButton("btn_files", "FIL", d.showFiles, d.accentColorIdx))
         d.showFiles = !d.showFiles;
     curX += appW + spacing;
 
+    // SYS (System)
     ImGui::SetCursorPos(ImVec2(curX, elemY));
     if (TaskbarAppButton("btn_sys", "SYS", d.showSysInfo, d.accentColorIdx))
         d.showSysInfo = !d.showSysInfo;
     curX += appW + spacing;
 
+    // TSK (Task Manager)
     ImGui::SetCursorPos(ImVec2(curX, elemY));
-    if (TaskbarAppButton("btn_task", "TASK", d.showTaskMgr, d.accentColorIdx))
+    if (TaskbarAppButton("btn_task", "TSK", d.showTaskMgr, d.accentColorIdx))
         d.showTaskMgr = !d.showTaskMgr;
-    curX += appW + spacing;
 
-    ImGui::SetCursorPos(ImVec2(curX, elemY));
-    if (TaskbarAppButton("btn_sett", "SETT", d.showSettings, d.accentColorIdx))
-        d.showSettings = !d.showSettings;
-
-    // 3. System Tray (Clock & PWR)
+    // 3. System Tray (VOL, Clock, PWR)
     DrawSystemTray(d, disp.x, barH);
 
     ImGui::End();

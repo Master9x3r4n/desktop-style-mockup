@@ -66,7 +66,7 @@ void DrawWallpaper() {
         return;
     }
 
-    // Procedural wallpaper fallback
+    // Procedural fallback
     ImU32 topL = IM_COL32(16, 22, 48, 255);
     ImU32 topR = IM_COL32(40, 28, 84, 255);
     ImU32 botR = IM_COL32(88, 40, 110, 255);
@@ -82,4 +82,80 @@ void DrawWallpaper() {
             dl->AddCircleFilled(ImVec2(x, y), 1.5f, IM_COL32(255, 255, 255, 28));
         }
     }
+}
+
+// Single desktop shortcut card
+static void DesktopIcon(const char* label, const char* badge, ImU32 color, bool& appOpen) {
+    ImVec2 p = ImGui::GetCursorScreenPos();
+    float itemW = px(84.0f);
+    float itemH = px(92.0f);
+
+    ImGui::PushID(label);
+    bool clicked = ImGui::Selectable("##icon", false, 0, ImVec2(itemW, itemH));
+    bool hovered = ImGui::IsItemHovered();
+
+    if (clicked || (hovered && ImGui::IsMouseDoubleClicked(0))) {
+        appOpen = true;
+    }
+
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    ImVec2 pMax(p.x + itemW, p.y + itemH);
+
+    if (hovered) {
+        dl->AddRectFilled(p, pMax, IM_COL32(255, 255, 255, 28), px(8.0f));
+        dl->AddRect(p, pMax, IM_COL32(255, 255, 255, 45), px(8.0f), 0, 1.0f);
+    }
+
+    // Icon Tile
+    float iconSz = px(46.0f);
+    float ix = p.x + (itemW - iconSz) * 0.5f;
+    float iy = p.y + px(8.0f);
+    ImVec2 iMin(ix, iy);
+    ImVec2 iMax(ix + iconSz, iy + iconSz);
+
+    // Subtle drop shadow
+    dl->AddRectFilled(ImVec2(iMin.x, iMin.y + px(2)), ImVec2(iMax.x, iMax.y + px(2)), IM_COL32(0, 0, 0, 70), px(10.0f));
+    dl->AddRectFilled(iMin, iMax, color, px(10.0f));
+    dl->AddRect(iMin, iMax, IM_COL32(255, 255, 255, 40), px(10.0f));
+
+    // Badge text on icon
+    ImVec2 bSz = ImGui::CalcTextSize(badge);
+    dl->AddText(ImVec2(iMin.x + (iconSz - bSz.x) * 0.5f, iMin.y + (iconSz - bSz.y) * 0.5f),
+                IM_COL32(255, 255, 255, 255), badge);
+
+    // Label with drop shadow below icon
+    ImVec2 lSz = ImGui::CalcTextSize(label);
+    float tx = p.x + (itemW - lSz.x) * 0.5f;
+    float ty = iy + iconSz + px(5.0f);
+    dl->AddText(ImVec2(tx + 1, ty + 1), IM_COL32(0, 0, 0, 220), label);
+    dl->AddText(ImVec2(tx, ty), IM_COL32(255, 255, 255, 255), label);
+
+    ImGui::PopID();
+}
+
+void DrawDesktopIcons(Desktop& d) {
+    ImGui::SetNextWindowPos(ImVec2(px(20), px(20)), ImGuiCond_Always);
+    ImGui::SetNextWindowBgAlpha(0.0f);
+
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+                             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
+                             ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, 0));
+
+    ImGui::Begin("##desktop_icons", nullptr, flags);
+
+    // Desktop icons for remaining apps
+    DesktopIcon("Wuhdle", "WUH", IM_COL32(83, 141, 78, 255), d.showWordle);
+    ImGui::Spacing();
+    DesktopIcon("ChicaGPT", "GPT", IM_COL32(210, 80, 160, 255), d.showAI);
+    ImGui::Spacing();
+    DesktopIcon("Calculator", "CAL", IM_COL32(210, 110, 50, 255), d.showCalc);
+
+    ImGui::End();
+
+    ImGui::PopStyleColor();
+    ImGui::PopStyleVar(2);
 }

@@ -34,7 +34,7 @@ FetchContent_MakeAvailable(glfw imgui stb)
 
 find_package(OpenGL REQUIRED)
 
-# Build ImGui as a static library
+# Build ImGui static library
 add_library(imgui STATIC
     ${imgui_SOURCE_DIR}/imgui.cpp
     ${imgui_SOURCE_DIR}/imgui_draw.cpp
@@ -60,6 +60,9 @@ set(APP_SOURCES
     src/Apps/SystemInfo.cpp
     src/Apps/TaskManager.cpp
     src/Apps/SettingsApp.cpp
+    src/Apps/WordleApp.cpp
+    src/Apps/AiApp.cpp
+    src/Apps/CalculatorApp.cpp
 )
 
 add_executable(myapp ${APP_SOURCES})

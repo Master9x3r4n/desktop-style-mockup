@@ -11,10 +11,10 @@ void DrawSettingsWindow(Desktop& d) {
         return;
     }
 
-    static int currentTab = 0; // 0: Taskbar, 1: Personalization, 2: System, 3: About
+    static int currentTab = 0;
     const char* tabs[] = {"Taskbar", "Personalization", "System", "About"};
 
-    // Left Navigation Sidebar
+    // Sidebar
     ImGui::BeginChild("settings_sidebar", ImVec2(px(180), 0), ImGuiChildFlags_Borders);
     ImGui::Spacing();
     for (int i = 0; i < 4; i++) {
@@ -27,7 +27,7 @@ void DrawSettingsWindow(Desktop& d) {
 
     ImGui::SameLine();
 
-    // Right Content Area
+    // Content Area
     ImGui::BeginChild("settings_content", ImVec2(0, 0), true);
     
     // TAB 0: TASKBAR SETTINGS
@@ -52,7 +52,6 @@ void DrawSettingsWindow(Desktop& d) {
         ImGui::Separator();
         ImGui::Spacing();
 
-        // Additional Mock settings
         ImGui::TextDisabled("Other Taskbar Settings (Mock)");
         static bool autoHide = false;
         static bool showBadges = true;
@@ -120,8 +119,8 @@ void DrawSettingsWindow(Desktop& d) {
         ImGui::Separator();
         ImGui::Spacing();
 
-        static float volume = 65.0f;
-        ImGui::SliderFloat("Master Volume", &volume, 0.0f, 100.0f, "%.0f%%");
+        // Linked to the taskbar volume slider
+        ImGui::SliderFloat("Master Volume", &d.masterVolume, 0.0f, 100.0f, "%.0f%%");
 
         static int powerMode = 1;
         const char* powerModes[] = {"Power Saver", "Balanced", "Best Performance"};
