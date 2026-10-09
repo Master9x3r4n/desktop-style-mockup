@@ -75,8 +75,8 @@ static void BuildFs() {
 
     FsNode* reports = Folder(e.documents, "Reports");
     FsNode* csopesy = Folder(e.documents, "CSOPESY");
-    File(reports, "Week1.docx", "Microsoft Word Document", "48 KB");
-    File(reports, "Week2.docx", "Microsoft Word Document", "52 KB");
+    File(reports, "STADVDB_NOTES.docx", "Microsoft Word Document", "48 KB");
+    File(reports, "CSARCH2_REVIEW_FINAL_FINAL.docx", "Microsoft Word Document", "52 KB");
     File(csopesy, "main.cpp", "C++ Source File", "14 KB");
     File(csopesy, "CMakeLists.txt", "Text Document", "2 KB");
     File(e.documents, "notes.txt", "Text Document", "2 KB");
@@ -88,12 +88,12 @@ static void BuildFs() {
     File(e.downloads, "wallpaper.png", "PNG File", "1,240 KB");
 
     Folder(e.pictures, "Screenshots");
-    Folder(e.pictures, "Vacation");
+    Folder(e.pictures, "Wendyslop Pics");
     File(e.pictures, "wallpaper.png", "PNG File", "1,240 KB");
     File(e.pictures, "photo1.jpg", "JPG File", "2,310 KB");
 
-    File(e.music, "song.mp3", "MP3 File", "4,120 KB");
-    File(e.music, "playlist.m3u", "Playlist", "1 KB");
+    File(e.music, "feel.mp3", "MP3 File", "4,120 KB");
+    File(e.music, "awesome_mix_vol1.m3u", "Playlist", "1 KB");
 
     FsNode* projects = Folder(e.dDrive, "Projects");
     Folder(projects, "OS-Mock-Up");

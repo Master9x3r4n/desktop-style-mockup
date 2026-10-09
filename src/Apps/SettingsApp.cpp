@@ -84,7 +84,7 @@ void DrawSettingsWindow(Desktop& d) {
 
         // 2. Accent Color
         ImGui::Text("Accent Color:");
-        const char* colors[] = {"Fluent Sky Blue", "Amethyst Violet", "Emerald Green", "Sunset Coral"};
+        const char* colors[] = {"Sussy Blue", "Ok Poilet", "Cutest Green", "Gabby Orange"};
         for (int i = 0; i < 4; i++) {
             ImVec4 col = GetAccentColor(i);
             ImGui::PushStyleColor(ImGuiCol_Button, col);
@@ -112,9 +112,9 @@ void DrawSettingsWindow(Desktop& d) {
 
         ImGui::TextDisabled("Themes & Effects (Mock)");
         static bool darkTheme = true;
-        static bool acrylicGlass = true;
+        static bool transparency = true;
         ImGui::Checkbox("Dark Mode", &darkTheme);
-        ImGui::Checkbox("Enable Transparency / Acrylic blur effects", &acrylicGlass);
+        ImGui::Checkbox("Enable Transparency", &transparency);
     }
     // TAB 2: SYSTEM
     else if (currentTab == 2) {

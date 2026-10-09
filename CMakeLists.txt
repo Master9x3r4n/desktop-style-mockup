@@ -63,6 +63,7 @@ set(APP_SOURCES
     src/Apps/WordleApp.cpp
     src/Apps/AiApp.cpp
     src/Apps/CalculatorApp.cpp
+    src/Apps/ReelsApp.cpp
 )
 
 add_executable(myapp ${APP_SOURCES})

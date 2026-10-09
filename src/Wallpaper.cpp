@@ -11,7 +11,10 @@
 #endif
 
 #include <cstdint>
+#include <cstdio>
 #include <string>
+#include <vector>
+#include <algorithm>
 
 struct CachedTexture {
     GLuint tex = 0;
@@ -23,10 +26,83 @@ struct CachedTexture {
 // Index 0: Grass (wallpaper1.png), 1: Magic (wallpaper2.png), 2: Slop (wallpaper3.png)
 static CachedTexture gWallTex[3];
 
+// High-quality box-filter downscaler (prevents aliasing and skips no pixels)
+static std::vector<unsigned char> DownscaleImage(
+    const unsigned char* src, int srcW, int srcH, int dstW, int dstH) 
+{
+    std::vector<unsigned char> dst(dstW * dstH * 4);
+    float xStep = (float)srcW / (float)dstW;
+    float yStep = (float)srcH / (float)dstH;
+
+    for (int dy = 0; dy < dstH; dy++) {
+        int syStart = (int)(dy * yStep);
+        int syEnd = std::min((int)((dy + 1) * yStep), srcH);
+        if (syEnd <= syStart) syEnd = syStart + 1;
+
+        for (int dx = 0; dx < dstW; dx++) {
+            int sxStart = (int)(dx * xStep);
+            int sxEnd = std::min((int)((dx + 1) * xStep), srcW);
+            if (sxEnd <= sxStart) sxEnd = sxStart + 1;
+
+            unsigned int r = 0, g = 0, b = 0, a = 0;
+            int count = 0;
+
+            for (int sy = syStart; sy < syEnd; sy++) {
+                const unsigned char* row = src + (sy * srcW) * 4;
+                for (int sx = sxStart; sx < sxEnd; sx++) {
+                    const unsigned char* p = row + sx * 4;
+                    r += p[0];
+                    g += p[1];
+                    b += p[2];
+                    a += p[3];
+                    count++;
+                }
+            }
+
+            unsigned char* out = &dst[(dy * dstW + dx) * 4];
+            out[0] = (unsigned char)(r / count);
+            out[1] = (unsigned char)(g / count);
+            out[2] = (unsigned char)(b / count);
+            out[3] = (unsigned char)(a / count);
+        }
+    }
+    return dst;
+}
+
 static GLuint LoadTexture(const char* path, int& outW, int& outH) {
     int channels = 0;
     unsigned char* data = stbi_load(path, &outW, &outH, &channels, 4);
-    if (!data) return 0;
+    if (!data) {
+        return 0; // File not found at this candidate path
+    }
+
+    // Determine max supported texture dimension for this GPU
+    GLint maxGpuSize = 2048;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxGpuSize);
+    if (maxGpuSize < 512) maxGpuSize = 2048;
+
+    // Cap wallpaper to 2560px or GPU maximum (whichever is smaller)
+    int maxTarget = std::min((int)maxGpuSize, 2560);
+
+    const unsigned char* uploadData = data;
+    std::vector<unsigned char> downscaledData;
+
+    // Automatically downscale if resolution is too large
+    if (outW > maxTarget || outH > maxTarget) {
+        float scale = std::min((float)maxTarget / outW, (float)maxTarget / outH);
+        int dstW = std::max(1, (int)(outW * scale));
+        int dstH = std::max(1, (int)(outH * scale));
+
+        std::printf("[Wallpaper] '%s' is %dx%d. Downsampling to %dx%d for OpenGL compatibility...\n",
+                    path, outW, outH, dstW, dstH);
+
+        downscaledData = DownscaleImage(data, outW, outH, dstW, dstH);
+        uploadData = downscaledData.data();
+        outW = dstW;
+        outH = dstH;
+    } else {
+        std::printf("[Wallpaper] Loaded '%s' (%dx%d)\n", path, outW, outH);
+    }
 
     GLuint tex = 0;
     glGenTextures(1, &tex);
@@ -36,7 +112,9 @@ static GLuint LoadTexture(const char* path, int& outW, int& outH) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, outW, outH, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, outW, outH, 0, GL_RGBA, GL_UNSIGNED_BYTE, uploadData);
+
     stbi_image_free(data);
     return tex;
 }
@@ -76,12 +154,18 @@ void DrawWallpaper(const Desktop& d) {
         if (!item.attempted) {
             item.attempted = true;
             const char* fileNames[] = { "wallpaper1.png", "wallpaper2.png", "wallpaper3.png" };
+            
+            // Check PROJECT_DIR, local relative, and parent build relative paths
             std::string path1 = std::string(PROJECT_DIR) + "/wallpaper/" + fileNames[imgIdx];
             std::string path2 = std::string("wallpaper/") + fileNames[imgIdx];
+            std::string path3 = std::string("../wallpaper/") + fileNames[imgIdx];
 
             item.tex = LoadTexture(path1.c_str(), item.w, item.h);
+            if (!item.tex) item.tex = LoadTexture(path2.c_str(), item.w, item.h);
+            if (!item.tex) item.tex = LoadTexture(path3.c_str(), item.w, item.h);
+
             if (!item.tex) {
-                item.tex = LoadTexture(path2.c_str(), item.w, item.h);
+                std::printf("[Wallpaper Error] Failed to load '%s' from any candidate path.\n", fileNames[imgIdx]);
             }
         }
 
@@ -103,7 +187,7 @@ void DrawWallpaper(const Desktop& d) {
         }
     }
 
-    // Fallback if image failed to load
+    // Fallback if image missing or corrupted
     DrawProceduralWallpaper(dl, size);
 }
 
@@ -165,11 +249,14 @@ void DrawDesktopIcons(Desktop& d) {
 
     ImGui::Begin("##desktop_icons", nullptr, flags);
 
+    // Desktop icons
     DesktopIcon("Wuhdle", "WUH", IM_COL32(83, 141, 78, 255), d.showWordle);
     ImGui::Spacing();
     DesktopIcon("ChicaGPT", "GPT", IM_COL32(210, 80, 160, 255), d.showAI);
     ImGui::Spacing();
     DesktopIcon("Calculator", "CAL", IM_COL32(210, 110, 50, 255), d.showCalc);
+    ImGui::Spacing();
+    DesktopIcon("Reels", "REL", IM_COL32(230, 45, 85, 255), d.showReels);
 
     ImGui::End();
 

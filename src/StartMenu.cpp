@@ -134,6 +134,9 @@ void DrawStartMenu(Desktop& d) {
         if (StartMenuAppRow("Calculator", "Basic arithmetic operations", IM_COL32(210, 110, 50, 255), "CAL")) {
             d.showCalc = true; d.startOpen = false; ImGui::SetWindowFocus("Calculator");
         }
+        if (StartMenuAppRow("Reels", "Short vertical media feed", IM_COL32(230, 45, 85, 255), "REL")) {
+            d.showReels = true; d.startOpen = false; ImGui::SetWindowFocus("Reels");
+        }
     }
     ImGui::EndChild();
 

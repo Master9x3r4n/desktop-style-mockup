@@ -20,6 +20,7 @@ struct Desktop {
     bool showWordle = false;
     bool showAI = false;
     bool showCalc = false;
+    bool showReels = false;
 
     bool startOpen = false;
     bool startJustOpened = false;

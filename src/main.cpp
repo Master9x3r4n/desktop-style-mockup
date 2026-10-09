@@ -9,6 +9,7 @@
 #include "Apps/WordleApp.h"
 #include "Apps/AiApp.h"
 #include "Apps/CalculatorApp.h"
+#include "Apps/ReelsApp.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -118,6 +119,7 @@ int main() {
         if (desktop.showWordle)   DrawWordleWindow(desktop.showWordle);
         if (desktop.showAI)       DrawAiWindow(desktop.showAI);
         if (desktop.showCalc)     DrawCalculatorWindow(desktop.showCalc);
+        if (desktop.showReels)    DrawReelsWindow(desktop.showReels);
 
         // 3. Taskbar & Start Menu
         DrawTaskbar(desktop);
