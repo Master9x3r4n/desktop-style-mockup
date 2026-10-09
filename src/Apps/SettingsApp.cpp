@@ -3,7 +3,7 @@
 void DrawSettingsWindow(Desktop& d) {
     if (!d.showSettings) return;
 
-    ImGui::SetNextWindowSize(ImVec2(px(700), px(460)), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(px(700), px(480)), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowPos(ImVec2(px(140), px(80)), ImGuiCond_FirstUseEver);
 
     if (!ImGui::Begin("Settings", &d.showSettings)) {
@@ -68,6 +68,21 @@ void DrawSettingsWindow(Desktop& d) {
         ImGui::Separator();
         ImGui::Spacing();
 
+        // 1. Wallpaper Selection (4 presets)
+        ImGui::Text("Desktop Wallpaper:");
+        const char* wpNames[] = { "Classic", "Grass", "Magic", "Slop" };
+        for (int i = 0; i < 4; i++) {
+            if (ImGui::RadioButton(wpNames[i], d.wallpaperPreset == i)) {
+                d.wallpaperPreset = i;
+            }
+            if (i < 3) ImGui::SameLine(px(100) * (i + 1));
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        // 2. Accent Color
         ImGui::Text("Accent Color:");
         const char* colors[] = {"Fluent Sky Blue", "Amethyst Violet", "Emerald Green", "Sunset Coral"};
         for (int i = 0; i < 4; i++) {
@@ -119,7 +134,6 @@ void DrawSettingsWindow(Desktop& d) {
         ImGui::Separator();
         ImGui::Spacing();
 
-        // Linked to the taskbar volume slider
         ImGui::SliderFloat("Master Volume", &d.masterVolume, 0.0f, 100.0f, "%.0f%%");
 
         static int powerMode = 1;

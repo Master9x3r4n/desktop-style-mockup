@@ -11,6 +11,17 @@
 #endif
 
 #include <cstdint>
+#include <string>
+
+struct CachedTexture {
+    GLuint tex = 0;
+    int w = 0;
+    int h = 0;
+    bool attempted = false;
+};
+
+// Index 0: Grass (wallpaper1.png), 1: Magic (wallpaper2.png), 2: Slop (wallpaper3.png)
+static CachedTexture gWallTex[3];
 
 static GLuint LoadTexture(const char* path, int& outW, int& outH) {
     int channels = 0;
@@ -30,43 +41,7 @@ static GLuint LoadTexture(const char* path, int& outW, int& outH) {
     return tex;
 }
 
-void DrawWallpaper() {
-    ImDrawList* dl = ImGui::GetBackgroundDrawList();
-    ImVec2 size = ImGui::GetIO().DisplaySize;
-
-    static bool tried = false;
-    static GLuint wallTex = 0;
-    static int wallW = 0, wallH = 0;
-    if (!tried) {
-        tried = true;
-        const char* candidates[] = {
-            PROJECT_DIR "/wallpaper/wallpaper.png",
-            "wallpaper/wallpaper.png",
-        };
-        for (const char* p : candidates) {
-            wallTex = LoadTexture(p, wallW, wallH);
-            if (wallTex) break;
-        }
-    }
-
-    if (wallTex) {
-        float imgAspect = (float)wallW / (float)wallH;
-        float scrAspect = size.x / size.y;
-        ImVec2 uv0(0, 0), uv1(1, 1);
-        if (scrAspect > imgAspect) {
-            float visible = imgAspect / scrAspect;
-            uv0.y = (1.0f - visible) * 0.5f;
-            uv1.y = 1.0f - uv0.y;
-        } else {
-            float visible = scrAspect / imgAspect;
-            uv0.x = (1.0f - visible) * 0.5f;
-            uv1.x = 1.0f - uv0.x;
-        }
-        dl->AddImage((ImTextureID)(intptr_t)wallTex, ImVec2(0, 0), size, uv0, uv1);
-        return;
-    }
-
-    // Procedural fallback
+static void DrawProceduralWallpaper(ImDrawList* dl, ImVec2 size) {
     ImU32 topL = IM_COL32(16, 22, 48, 255);
     ImU32 topR = IM_COL32(40, 28, 84, 255);
     ImU32 botR = IM_COL32(88, 40, 110, 255);
@@ -84,7 +59,54 @@ void DrawWallpaper() {
     }
 }
 
-// Single desktop shortcut card
+void DrawWallpaper(const Desktop& d) {
+    ImDrawList* dl = ImGui::GetBackgroundDrawList();
+    ImVec2 size = ImGui::GetIO().DisplaySize;
+
+    // Preset 0: Classic (Default layout if no image)
+    if (d.wallpaperPreset == 0) {
+        DrawProceduralWallpaper(dl, size);
+        return;
+    }
+
+    // Presets 1: Grass, 2: Magic, 3: Slop
+    int imgIdx = d.wallpaperPreset - 1;
+    if (imgIdx >= 0 && imgIdx < 3) {
+        CachedTexture& item = gWallTex[imgIdx];
+        if (!item.attempted) {
+            item.attempted = true;
+            const char* fileNames[] = { "wallpaper1.png", "wallpaper2.png", "wallpaper3.png" };
+            std::string path1 = std::string(PROJECT_DIR) + "/wallpaper/" + fileNames[imgIdx];
+            std::string path2 = std::string("wallpaper/") + fileNames[imgIdx];
+
+            item.tex = LoadTexture(path1.c_str(), item.w, item.h);
+            if (!item.tex) {
+                item.tex = LoadTexture(path2.c_str(), item.w, item.h);
+            }
+        }
+
+        if (item.tex) {
+            float imgAspect = (float)item.w / (float)item.h;
+            float scrAspect = size.x / size.y;
+            ImVec2 uv0(0, 0), uv1(1, 1);
+            if (scrAspect > imgAspect) {
+                float visible = imgAspect / scrAspect;
+                uv0.y = (1.0f - visible) * 0.5f;
+                uv1.y = 1.0f - uv0.y;
+            } else {
+                float visible = scrAspect / imgAspect;
+                uv0.x = (1.0f - visible) * 0.5f;
+                uv1.x = 1.0f - uv0.x;
+            }
+            dl->AddImage((ImTextureID)(intptr_t)item.tex, ImVec2(0, 0), size, uv0, uv1);
+            return;
+        }
+    }
+
+    // Fallback if image failed to load
+    DrawProceduralWallpaper(dl, size);
+}
+
 static void DesktopIcon(const char* label, const char* badge, ImU32 color, bool& appOpen) {
     ImVec2 p = ImGui::GetCursorScreenPos();
     float itemW = px(84.0f);
@@ -106,24 +128,20 @@ static void DesktopIcon(const char* label, const char* badge, ImU32 color, bool&
         dl->AddRect(p, pMax, IM_COL32(255, 255, 255, 45), px(8.0f), 0, 1.0f);
     }
 
-    // Icon Tile
     float iconSz = px(46.0f);
     float ix = p.x + (itemW - iconSz) * 0.5f;
     float iy = p.y + px(8.0f);
     ImVec2 iMin(ix, iy);
     ImVec2 iMax(ix + iconSz, iy + iconSz);
 
-    // Subtle drop shadow
     dl->AddRectFilled(ImVec2(iMin.x, iMin.y + px(2)), ImVec2(iMax.x, iMax.y + px(2)), IM_COL32(0, 0, 0, 70), px(10.0f));
     dl->AddRectFilled(iMin, iMax, color, px(10.0f));
     dl->AddRect(iMin, iMax, IM_COL32(255, 255, 255, 40), px(10.0f));
 
-    // Badge text on icon
     ImVec2 bSz = ImGui::CalcTextSize(badge);
     dl->AddText(ImVec2(iMin.x + (iconSz - bSz.x) * 0.5f, iMin.y + (iconSz - bSz.y) * 0.5f),
                 IM_COL32(255, 255, 255, 255), badge);
 
-    // Label with drop shadow below icon
     ImVec2 lSz = ImGui::CalcTextSize(label);
     float tx = p.x + (itemW - lSz.x) * 0.5f;
     float ty = iy + iconSz + px(5.0f);
@@ -147,7 +165,6 @@ void DrawDesktopIcons(Desktop& d) {
 
     ImGui::Begin("##desktop_icons", nullptr, flags);
 
-    // Desktop icons for remaining apps
     DesktopIcon("Wuhdle", "WUH", IM_COL32(83, 141, 78, 255), d.showWordle);
     ImGui::Spacing();
     DesktopIcon("ChicaGPT", "GPT", IM_COL32(210, 80, 160, 255), d.showAI);

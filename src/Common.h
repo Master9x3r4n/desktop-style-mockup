@@ -26,10 +26,11 @@ struct Desktop {
     bool startButtonHovered = false;
     bool shutdownRequested = false;
 
-    // Volume & Settings
+    // Volume & Personalization Settings
     float masterVolume = 65.0f;
     TaskbarAlignment taskbarAlign = TaskbarAlignment::Center;
     int accentColorIdx = 0; // 0: Sky Blue, 1: Violet, 2: Emerald, 3: Coral
+    int wallpaperPreset = 0; // 0: Classic, 1: Grass, 2: Magic, 3: Slop
 };
 
 inline ImVec4 GetAccentColor(int idx) {

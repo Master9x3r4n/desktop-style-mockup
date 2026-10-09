@@ -107,7 +107,7 @@ int main() {
         ImGui::NewFrame();
 
         // 1. Desktop background & Desktop Icons
-        DrawWallpaper();
+        DrawWallpaper(desktop);
         DrawDesktopIcons(desktop);
 
         // 2. Applications

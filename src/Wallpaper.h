@@ -1,5 +1,5 @@
 #pragma once
 #include "Common.h"
 
-void DrawWallpaper();
+void DrawWallpaper(const Desktop& d);
 void DrawDesktopIcons(Desktop& d);
