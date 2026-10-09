@@ -58,9 +58,9 @@ static void EnsureReelLoaded(int idx) {
     r.attempted = true;
 
     std::string fileName = "reel" + std::to_string(idx + 1) + ".jpg";
-    std::string p1 = std::string(PROJECT_DIR) + "/reels/" + fileName;
-    std::string p2 = std::string("reels/") + fileName;
-    std::string p3 = std::string("../reels/") + fileName;
+    std::string p1 = std::string(PROJECT_DIR) + "/assets/reels/" + fileName;
+    std::string p2 = std::string("assets/reels/") + fileName;
+    std::string p3 = std::string("../assets/reels/") + fileName;
 
     r.tex = LoadReelTexture(p1.c_str(), r.w, r.h);
     if (!r.tex) r.tex = LoadReelTexture(p2.c_str(), r.w, r.h);

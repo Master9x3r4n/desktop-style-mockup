@@ -156,9 +156,9 @@ void DrawWallpaper(const Desktop& d) {
             const char* fileNames[] = { "wallpaper1.png", "wallpaper2.png", "wallpaper3.png" };
             
             // Check PROJECT_DIR, local relative, and parent build relative paths
-            std::string path1 = std::string(PROJECT_DIR) + "/wallpaper/" + fileNames[imgIdx];
-            std::string path2 = std::string("wallpaper/") + fileNames[imgIdx];
-            std::string path3 = std::string("../wallpaper/") + fileNames[imgIdx];
+            std::string path1 = std::string(PROJECT_DIR) + "/assets/wallpaper/" + fileNames[imgIdx];
+            std::string path2 = std::string("assets/wallpaper/") + fileNames[imgIdx];
+            std::string path3 = std::string("../assets/wallpaper/") + fileNames[imgIdx];
 
             item.tex = LoadTexture(path1.c_str(), item.w, item.h);
             if (!item.tex) item.tex = LoadTexture(path2.c_str(), item.w, item.h);
