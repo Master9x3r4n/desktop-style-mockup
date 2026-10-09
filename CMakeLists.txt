@@ -23,7 +23,14 @@ FetchContent_Declare(
     GIT_TAG v1.91.9
 )
 
-FetchContent_MakeAvailable(glfw imgui)
+FetchContent_Declare(
+    stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG master
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(glfw imgui stb)
 
 find_package(OpenGL REQUIRED)
 
@@ -46,3 +53,5 @@ target_link_libraries(imgui PUBLIC glfw OpenGL::GL)
 # --- Your app ---
 add_executable(myapp src/main.cpp)
 target_link_libraries(myapp PRIVATE imgui)
+target_include_directories(myapp PRIVATE ${stb_SOURCE_DIR})
+target_compile_definitions(myapp PRIVATE PROJECT_DIR="${CMAKE_SOURCE_DIR}")
