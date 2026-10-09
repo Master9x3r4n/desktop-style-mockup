@@ -16,7 +16,7 @@ FetchContent_Declare(
     GIT_TAG 3.4
 )
 
-# --- Dear ImGui (no CMakeLists upstream, so we just download it) ---
+# --- Dear ImGui ---
 FetchContent_Declare(
     imgui
     GIT_REPOSITORY https://github.com/ocornut/imgui.git
@@ -50,8 +50,22 @@ target_include_directories(imgui PUBLIC
 )
 target_link_libraries(imgui PUBLIC glfw OpenGL::GL)
 
-# --- Your app ---
-add_executable(myapp src/main.cpp)
+# --- App Sources ---
+set(APP_SOURCES
+    src/main.cpp
+    src/Wallpaper.cpp
+    src/Taskbar.cpp
+    src/StartMenu.cpp
+    src/Apps/FileExplorer.cpp
+    src/Apps/SystemInfo.cpp
+    src/Apps/TaskManager.cpp
+    src/Apps/SettingsApp.cpp
+)
+
+add_executable(myapp ${APP_SOURCES})
 target_link_libraries(myapp PRIVATE imgui)
-target_include_directories(myapp PRIVATE ${stb_SOURCE_DIR})
+target_include_directories(myapp PRIVATE
+    src
+    ${stb_SOURCE_DIR}
+)
 target_compile_definitions(myapp PRIVATE PROJECT_DIR="${CMAKE_SOURCE_DIR}")

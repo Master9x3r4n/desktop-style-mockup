@@ -64,6 +64,22 @@ IMPORTANT: Use the CMake buttons in the bottom status bar. Do NOT use the
 top-right "Run Code" / "Run C/C++ File" button, because it compiles main.cpp
 alone without the ImGui include paths and will fail.
 
+## Project Structure
+```
+CMakeLists.txt
+src/
+  Common.h                # Scales (px), constants, shared Desktop state
+  Wallpaper.h / .cpp      # Wallpaper texture loading & procedural fallback
+  DesktopOverlay.h / .cpp # Top-right clock and PWR button
+  Taskbar.h / .cpp        # Bottom taskbar & Start button
+  StartMenu.h / .cpp      # Start menu popup
+  Apps/
+    FileExplorer.h / .cpp # Virtual filesystem and File Explorer window
+    SystemInfo.h / .cpp   # System Info window
+    TaskManager.h / .cpp  # Task Manager window & mock process metrics
+  main.cpp                # App initialization and render loop
+```
+
 ## Usage
   - Click Files, System Info or Task Manager on the taskbar to open or close
     each window. Windows can be dragged, resized and closed with their own
