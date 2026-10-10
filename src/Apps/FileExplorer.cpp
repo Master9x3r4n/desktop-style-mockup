@@ -52,7 +52,7 @@ struct Explorer {
 };
 static Explorer gEx;
 
-static void BuildFs() {
+static void BuildFileStructure() {
     Explorer& e = gEx;
     e.root = Folder(nullptr, "This PC", "");
     e.cDrive = Folder(e.root, "Local Disk (C:)", "");
@@ -64,37 +64,42 @@ static void BuildFs() {
     FsNode* guest = Folder(users, "Guest");
     Folder(e.cDrive, "Program Files");
     Folder(e.cDrive, "Windows");
-
     e.desktop   = Folder(guest, "Desktop");
     e.documents = Folder(guest, "Documents");
     e.downloads = Folder(guest, "Downloads");
     e.pictures  = Folder(guest, "Pictures");
     e.music     = Folder(guest, "Music");
 
+    // desktop
     File(e.desktop, "CSOPESY Shell.lnk", "Shortcut", "2 KB");
-
     FsNode* reports = Folder(e.documents, "Reports");
     FsNode* csopesy = Folder(e.documents, "CSOPESY");
     File(reports, "STADVDB_NOTES.docx", "Microsoft Word Document", "48 KB");
     File(reports, "CSARCH2_REVIEW_FINAL_FINAL.docx", "Microsoft Word Document", "52 KB");
     File(csopesy, "main.cpp", "C++ Source File", "14 KB");
     File(csopesy, "CMakeLists.txt", "Text Document", "2 KB");
+
+    // documents
     File(e.documents, "notes.txt", "Text Document", "2 KB");
     File(e.documents, "scheduler.cpp", "C++ Source File", "14 KB", "2026-10-03 09:12 AM");
     File(e.documents, "output2.pptx", "PowerPoint Presentation", "3,812 KB", "2026-10-05 08:45 PM");
 
+    // downloads
     File(e.downloads, "installer.exe", "Application", "48,210 KB");
     File(e.downloads, "report.pdf", "PDF Document", "920 KB");
     File(e.downloads, "wallpaper.png", "PNG File", "1,240 KB");
 
+    // picturtees
     Folder(e.pictures, "Screenshots");
     Folder(e.pictures, "Wendyslop Pics");
     File(e.pictures, "wallpaper.png", "PNG File", "1,240 KB");
     File(e.pictures, "photo1.jpg", "JPG File", "2,310 KB");
 
+    // music
     File(e.music, "feel.mp3", "MP3 File", "4,120 KB");
     File(e.music, "awesome_mix_vol1.m3u", "Playlist", "1 KB");
 
+    // projects
     FsNode* projects = Folder(e.dDrive, "Projects");
     Folder(projects, "OS-Mock-Up");
     Folder(e.dDrive, "Backups");
@@ -169,7 +174,7 @@ static void NavItem(const char* label, FsNode* target, FsNode*& goTo) {
 }
 
 void DrawFilesWindow(bool& open) {
-    if (!gEx.root) BuildFs();
+    if (!gEx.root) BuildFileStructure();
 
     ImGui::SetNextWindowSize(ImVec2(px(820), px(520)), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowPos(ImVec2(px(60), px(50)), ImGuiCond_FirstUseEver);

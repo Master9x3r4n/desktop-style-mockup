@@ -16,7 +16,6 @@ struct AiState {
 };
 
 static AiState gAi;
-
 static const char* kChicaReplies[] = {
     "I hear you! That's a really interesting point, tell me more about it.",
     "Honestly, that sounds like a great plan. Let's see how that works out!",
@@ -25,12 +24,14 @@ static const char* kChicaReplies[] = {
     "That makes total sense to me! I'm right here with you on this one.",
     "I'm not 100% sure, but if I had to guess, I'd say you're definitely onto something.",
     "Fascinating thought! Thanks for sharing that with me.",
-    "Oh, definitely! We should dive deeper into that whenever you're ready."
+    "Oh, definitely! We should dive deeper into that whenever you're ready.",
+    "Ay???? Sure ka??????"
 };
 static const int kChicaReplyCount = sizeof(kChicaReplies) / sizeof(kChicaReplies[0]);
 
 static void SendAiMessage() {
-    if (gAi.remainingTokens <= 0 || gAi.inputBuf[0] == '\0') return;
+    if (gAi.remainingTokens <= 0 || gAi.inputBuf[0] == '\0') 
+        return;
 
     gAi.history.push_back({true, gAi.inputBuf});
     gAi.remainingTokens--;
@@ -48,13 +49,13 @@ void DrawAiWindow(bool& open) {
         return;
     }
 
-    // Header token indicator
+    // remaining "tokens"
     ImGui::TextColored(GetAccentColor(0), "ChicaGPT 4.0");
     ImGui::SameLine(ImGui::GetWindowWidth() - px(180));
     ImGui::TextDisabled("Tokens left: %d / 5", gAi.remainingTokens);
     ImGui::Separator();
 
-    // Chat Message Log
+    // chat logs
     float inputH = px(44.0f);
     ImGui::BeginChild("chat_log", ImVec2(0, -inputH - px(10)), ImGuiChildFlags_Borders);
     {
@@ -84,7 +85,7 @@ void DrawAiWindow(bool& open) {
     }
     ImGui::EndChild();
 
-    // Input row
+    // input row
     bool tokensExhausted = (gAi.remainingTokens <= 0);
     ImGui::BeginDisabled(tokensExhausted);
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - px(130));
@@ -95,12 +96,10 @@ void DrawAiWindow(bool& open) {
         SendAiMessage();
     }
     ImGui::EndDisabled();
-
     ImGui::SameLine();
     if (ImGui::Button("Reset", ImVec2(px(60), 0))) {
         gAi.history.clear();
         gAi.remainingTokens = 5;
     }
-
     ImGui::End();
 }

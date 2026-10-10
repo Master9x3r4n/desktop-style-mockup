@@ -27,10 +27,10 @@ void DrawSettingsWindow(Desktop& d) {
 
     ImGui::SameLine();
 
-    // Content Area
+    // content area
     ImGui::BeginChild("settings_content", ImVec2(0, 0), true);
     
-    // TAB 0: TASKBAR SETTINGS
+    // Taskbar Settings Tab
     if (currentTab == 0) {
         ImGui::SetWindowFontScale(1.15f);
         ImGui::Text("Taskbar Behaviors & Alignment");
@@ -60,7 +60,7 @@ void DrawSettingsWindow(Desktop& d) {
         ImGui::Checkbox("Show notification badges on taskbar apps", &showBadges);
         ImGui::Checkbox("Flash taskbar buttons when apps require attention", &flashIcons);
     }
-    // TAB 1: PERSONALIZATION
+    // Personalization Tab
     else if (currentTab == 1) {
         ImGui::SetWindowFontScale(1.15f);
         ImGui::Text("Personalization");
@@ -68,7 +68,7 @@ void DrawSettingsWindow(Desktop& d) {
         ImGui::Separator();
         ImGui::Spacing();
 
-        // 1. Wallpaper Selection (4 presets)
+        // wallpaper selectiuon
         ImGui::Text("Desktop Wallpaper:");
         const char* wpNames[] = { "Classic", "Grass", "Magic", "Slop" };
         for (int i = 0; i < 4; i++) {
@@ -82,9 +82,9 @@ void DrawSettingsWindow(Desktop& d) {
         ImGui::Separator();
         ImGui::Spacing();
 
-        // 2. Accent Color
+        // accent color
         ImGui::Text("Accent Color:");
-        const char* colors[] = {"Sussy Blue", "Ok Poilet", "Cutest Green", "Gabby Orange"};
+        const char* colors[] = {"Sussy Blue", "Ok Porple", "Cutest Green", "Gabby Orange"};
         for (int i = 0; i < 4; i++) {
             ImVec4 col = GetAccentColor(i);
             ImGui::PushStyleColor(ImGuiCol_Button, col);
@@ -105,18 +105,16 @@ void DrawSettingsWindow(Desktop& d) {
         }
         ImGui::NewLine();
         ImGui::Text("Selected Accent: %s", colors[d.accentColorIdx]);
-
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
-
         ImGui::TextDisabled("Themes & Effects (Mock)");
         static bool darkTheme = true;
         static bool transparency = true;
         ImGui::Checkbox("Dark Mode", &darkTheme);
         ImGui::Checkbox("Enable Transparency", &transparency);
     }
-    // TAB 2: SYSTEM
+    // System Tab
     else if (currentTab == 2) {
         ImGui::SetWindowFontScale(1.15f);
         ImGui::Text("System Display & Audio");
@@ -140,24 +138,21 @@ void DrawSettingsWindow(Desktop& d) {
         const char* powerModes[] = {"Power Saver", "Balanced", "Best Performance"};
         ImGui::Combo("Power Mode", &powerMode, powerModes, 3);
     }
-    // TAB 3: ABOUT
+    // about tab
     else if (currentTab == 3) {
         ImGui::SetWindowFontScale(1.15f);
         ImGui::Text("About CSOPESY OS");
         ImGui::SetWindowFontScale(1.0f);
         ImGui::Separator();
         ImGui::Spacing();
-
         ImGui::Text("OS Edition     : CSOPESY Desktop Shell (Preview)");
         ImGui::Text("Version        : 24H2");
         ImGui::Text("Framework      : Dear ImGui 1.91 + OpenGL 3.3");
         ImGui::Text("System Type    : 64-bit operating system, x64-based processor");
         ImGui::Spacing();
-
         if (ImGui::Button("Check for Updates", ImVec2(px(160), px(32)))) {
             ImGui::OpenPopup("UpdateNotice");
         }
-
         if (ImGui::BeginPopup("UpdateNotice")) {
             ImGui::Text("Your system is up to date.");
             ImGui::EndPopup();

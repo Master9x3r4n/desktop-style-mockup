@@ -23,71 +23,26 @@ struct CachedTexture {
     bool attempted = false;
 };
 
-// Index 0: Grass (wallpaper1.png), 1: Magic (wallpaper2.png), 2: Slop (wallpaper3.png)
 static CachedTexture gWallTex[3];
-
-// High-quality box-filter downscaler (prevents aliasing and skips no pixels)
-static std::vector<unsigned char> DownscaleImage(
-    const unsigned char* src, int srcW, int srcH, int dstW, int dstH) 
-{
-    std::vector<unsigned char> dst(dstW * dstH * 4);
-    float xStep = (float)srcW / (float)dstW;
-    float yStep = (float)srcH / (float)dstH;
-
-    for (int dy = 0; dy < dstH; dy++) {
-        int syStart = (int)(dy * yStep);
-        int syEnd = std::min((int)((dy + 1) * yStep), srcH);
-        if (syEnd <= syStart) syEnd = syStart + 1;
-
-        for (int dx = 0; dx < dstW; dx++) {
-            int sxStart = (int)(dx * xStep);
-            int sxEnd = std::min((int)((dx + 1) * xStep), srcW);
-            if (sxEnd <= sxStart) sxEnd = sxStart + 1;
-
-            unsigned int r = 0, g = 0, b = 0, a = 0;
-            int count = 0;
-
-            for (int sy = syStart; sy < syEnd; sy++) {
-                const unsigned char* row = src + (sy * srcW) * 4;
-                for (int sx = sxStart; sx < sxEnd; sx++) {
-                    const unsigned char* p = row + sx * 4;
-                    r += p[0];
-                    g += p[1];
-                    b += p[2];
-                    a += p[3];
-                    count++;
-                }
-            }
-
-            unsigned char* out = &dst[(dy * dstW + dx) * 4];
-            out[0] = (unsigned char)(r / count);
-            out[1] = (unsigned char)(g / count);
-            out[2] = (unsigned char)(b / count);
-            out[3] = (unsigned char)(a / count);
-        }
-    }
-    return dst;
-}
 
 static GLuint LoadTexture(const char* path, int& outW, int& outH) {
     int channels = 0;
     unsigned char* data = stbi_load(path, &outW, &outH, &channels, 4);
     if (!data) {
-        return 0; // File not found at this candidate path
+        return 0; // file not found
     }
 
-    // Determine max supported texture dimension for this GPU
+
     GLint maxGpuSize = 2048;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxGpuSize);
     if (maxGpuSize < 512) maxGpuSize = 2048;
 
-    // Cap wallpaper to 2560px or GPU maximum (whichever is smaller)
+    // Cap wallpaper to 2560px or GPU maximum
     int maxTarget = std::min((int)maxGpuSize, 2560);
 
     const unsigned char* uploadData = data;
     std::vector<unsigned char> downscaledData;
 
-    // Automatically downscale if resolution is too large
     if (outW > maxTarget || outH > maxTarget) {
         float scale = std::min((float)maxTarget / outW, (float)maxTarget / outH);
         int dstW = std::max(1, (int)(outW * scale));
@@ -96,8 +51,7 @@ static GLuint LoadTexture(const char* path, int& outW, int& outH) {
         std::printf("[Wallpaper] '%s' is %dx%d. Downsampling to %dx%d for OpenGL compatibility...\n",
                     path, outW, outH, dstW, dstH);
 
-        downscaledData = DownscaleImage(data, outW, outH, dstW, dstH);
-        uploadData = downscaledData.data();
+        uploadData = data;
         outW = dstW;
         outH = dstH;
     } else {
@@ -141,13 +95,13 @@ void DrawWallpaper(const Desktop& d) {
     ImDrawList* dl = ImGui::GetBackgroundDrawList();
     ImVec2 size = ImGui::GetIO().DisplaySize;
 
-    // Preset 0: Classic (Default layout if no image)
+    // default preset
     if (d.wallpaperPreset == 0) {
         DrawProceduralWallpaper(dl, size);
         return;
     }
 
-    // Presets 1: Grass, 2: Magic, 3: Slop
+    // selected presets
     int imgIdx = d.wallpaperPreset - 1;
     if (imgIdx >= 0 && imgIdx < 3) {
         CachedTexture& item = gWallTex[imgIdx];
@@ -187,7 +141,7 @@ void DrawWallpaper(const Desktop& d) {
         }
     }
 
-    // Fallback if image missing or corrupted
+    // fallback if image missing or corrupted
     DrawProceduralWallpaper(dl, size);
 }
 
@@ -199,14 +153,12 @@ static void DesktopIcon(const char* label, const char* badge, ImU32 color, bool&
     ImGui::PushID(label);
     bool clicked = ImGui::Selectable("##icon", false, 0, ImVec2(itemW, itemH));
     bool hovered = ImGui::IsItemHovered();
-
     if (clicked || (hovered && ImGui::IsMouseDoubleClicked(0))) {
         appOpen = true;
     }
 
     ImDrawList* dl = ImGui::GetWindowDrawList();
     ImVec2 pMax(p.x + itemW, p.y + itemH);
-
     if (hovered) {
         dl->AddRectFilled(p, pMax, IM_COL32(255, 255, 255, 28), px(8.0f));
         dl->AddRect(p, pMax, IM_COL32(255, 255, 255, 45), px(8.0f), 0, 1.0f);
@@ -217,7 +169,6 @@ static void DesktopIcon(const char* label, const char* badge, ImU32 color, bool&
     float iy = p.y + px(8.0f);
     ImVec2 iMin(ix, iy);
     ImVec2 iMax(ix + iconSz, iy + iconSz);
-
     dl->AddRectFilled(ImVec2(iMin.x, iMin.y + px(2)), ImVec2(iMax.x, iMax.y + px(2)), IM_COL32(0, 0, 0, 70), px(10.0f));
     dl->AddRectFilled(iMin, iMax, color, px(10.0f));
     dl->AddRect(iMin, iMax, IM_COL32(255, 255, 255, 40), px(10.0f));
@@ -238,18 +189,16 @@ static void DesktopIcon(const char* label, const char* badge, ImU32 color, bool&
 void DrawDesktopIcons(Desktop& d) {
     ImGui::SetNextWindowPos(ImVec2(px(20), px(20)), ImGuiCond_Always);
     ImGui::SetNextWindowBgAlpha(0.0f);
-
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
                              ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
                              ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, 0));
 
     ImGui::Begin("##desktop_icons", nullptr, flags);
 
-    // Desktop icons
+    // desktop icons
     DesktopIcon("Wuhdle", "WUH", IM_COL32(83, 141, 78, 255), d.showWordle);
     ImGui::Spacing();
     DesktopIcon("ChicaGPT", "GPT", IM_COL32(210, 80, 160, 255), d.showAI);

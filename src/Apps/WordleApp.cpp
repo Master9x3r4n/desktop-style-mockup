@@ -27,12 +27,11 @@ static void ResetWordle() {
     gWordle.statusMsg = "";
 }
 
-static void SubmitWordleGuess() {
+static void SubmitGuess() {
     if (gWordle.gameOver) return;
 
     std::string guess = gWordle.inputBuf;
     for (char& c : guess) c = (char)std::toupper((unsigned char)c);
-
     if (guess.length() != 5) {
         gWordle.statusMsg = "Guess must be exactly 5 letters!";
         return;
@@ -40,7 +39,6 @@ static void SubmitWordleGuess() {
 
     WordleRow row;
     row.guess = guess;
-
     std::string sol = gWordle.solution;
     bool solMatched[5] = {false, false, false, false, false};
     for (int i = 0; i < 5; i++) row.status[i] = 1;
@@ -140,7 +138,7 @@ void DrawWordleWindow(bool& open) {
                                                  ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_EnterReturnsTrue);
     ImGui::SameLine();
     if ((ImGui::Button("Submit", ImVec2(px(80), 0)) || enterPressed) && !gWordle.gameOver) {
-        SubmitWordleGuess();
+        SubmitGuess();
     }
     ImGui::EndDisabled();
 
