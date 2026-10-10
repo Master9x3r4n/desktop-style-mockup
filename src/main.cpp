@@ -16,6 +16,8 @@
 #include "imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
 #include <cstdio>
+#include <vector>
+#include <cstring>
 
 static void LoadFonts(ImGuiIO& io, float sizePx) {
     const char* paths[] = {
@@ -71,6 +73,18 @@ static void ApplyModernOSTheme() {
     colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.40f, 0.42f, 0.52f, 0.80f);
 }
 
+enum class OSState {
+    Booting,
+    Running
+};
+
+struct BiosLine {
+    double delay;       // Delay in seconds before this line appears
+    const char* text;   // Content string
+    ImVec4 color;       // Text color
+};
+
+
 int main() {
     if (!glfwInit()) return 1;
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -100,6 +114,34 @@ int main() {
 
     Desktop desktop;
 
+    // ==========================================================
+    // BIOS BOOT CONFIGURATION & SEQUENCE DATA
+    // ==========================================================
+    OSState osState = OSState::Booting;
+    double startTime = glfwGetTime();
+    double totalBootTime = 5.0; // Duration in seconds before showing the desktop
+
+    ImVec4 c_White  = ImVec4(0.90f, 0.90f, 0.90f, 1.0f);
+    ImVec4 c_Gray   = ImVec4(0.55f, 0.55f, 0.55f, 1.0f);
+    ImVec4 c_Green  = ImVec4(0.00f, 0.85f, 0.00f, 1.0f);
+    ImVec4 c_Amber  = ImVec4(0.90f, 0.55f, 0.00f, 1.0f);
+
+    std::vector<BiosLine> biosSequence = {
+        { 0.0, "CSOPESY Megatrends", c_White },
+        { 0.0, "Released: 06/07/2026", c_White },
+        { 0.0, "CSOPESY S04 (C) 2026 CSOPESY Megatrends, Inc.", c_White },
+
+        { 1.0, "Testing System Memory... 8192MB OK", c_White },
+
+        { 1.5, "CPU: Custom Virtual x86 Processor @ 3.80GHz", c_Gray },
+        { 1.5, "Speed: 3800 MHz  //  Cores: 8  //  Threads: 16", c_Gray },
+
+        { 2.0, "Detected Storages...", c_White },
+        { 2.0, "  [Target 0] NVMe: CSOPESY-SSD-512GB --> OK (S.M.A.R.T. Healthy)", c_Gray },
+        { 2.5, "  [Target 1] USB: Generic Boot Media Found", c_Gray },
+        { 3.0, "Booting CSOPESY OS...", c_Green }
+    };
+
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
@@ -107,23 +149,76 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // 1. Desktop background & Desktop Icons
-        DrawWallpaper(desktop);
-        DrawDesktopIcons(desktop);
+        double elapsed = glfwGetTime() - startTime;
+        if (osState == OSState::Booting) {
+            if (elapsed >= totalBootTime) {
+                osState = OSState::Running;
+            }
 
-        // 2. Applications
-        if (desktop.showFiles)    DrawFilesWindow(desktop.showFiles);
-        if (desktop.showSysInfo)  DrawSysInfoWindow(desktop.showSysInfo);
-        if (desktop.showTaskMgr)  DrawTaskManager(desktop.showTaskMgr);
-        if (desktop.showSettings) DrawSettingsWindow(desktop);
-        if (desktop.showWordle)   DrawWordleWindow(desktop.showWordle);
-        if (desktop.showAI)       DrawAiWindow(desktop.showAI);
-        if (desktop.showCalc)     DrawCalculatorWindow(desktop.showCalc);
-        if (desktop.showReels)    DrawReelsWindow(desktop.showReels);
+            // // Keyboard Override: Press Enter or Escape to instantly skip the BIOS sequence
+            // if (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_Escape) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter)) {
+            //     osState = OSState::Running;
+            // }
 
-        // 3. Taskbar & Start Menu
-        DrawTaskbar(desktop);
-        DrawStartMenu(desktop);
+            const ImGuiViewport* vp = ImGui::GetMainViewport();
+            ImGui::SetNextWindowPos(vp->WorkPos);
+            ImGui::SetNextWindowSize(vp->WorkSize);
+
+            ImGuiWindowFlags bootFlags = ImGuiWindowFlags_NoDecoration | 
+                                         ImGuiWindowFlags_NoMove | 
+                                         ImGuiWindowFlags_NoResize | 
+                                         ImGuiWindowFlags_NoSavedSettings;
+
+            // Pure black backdrop style context
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(px(30.0f), px(30.0f)));
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, px(4.0f)));
+
+            if (ImGui::Begin("##BiosScreen", nullptr, bootFlags)) {
+                // Print each log message when its specified timeline threshold triggers
+                for (int i = 0; i < biosSequence.size(); ++i) {
+                    if (elapsed >= biosSequence[i].delay) {
+                        ImGui::TextColored(biosSequence[i].color, "%s", biosSequence[i].text);
+                        
+                        if (std::strcmp(biosSequence[i].text, "CSOPESY S04 (C) 2026 CSOPESY Megatrends, Inc.") == 0 ||
+                            std::strcmp(biosSequence[i].text, "Testing System Memory... 8192MB OK") == 0 ||
+                            std::strcmp(biosSequence[i].text, "Speed: 3800 MHz  //  Cores: 8  //  Threads: 16") == 0 ||
+                            std::strcmp(biosSequence[i].text, "  [Target 1] USB: Generic Boot Media Found") == 0) {
+                            ImGui::Dummy(ImVec2(0.0f, px(20.0f))); // vertical space
+                        }
+                    }
+                }
+
+                // Blinking prompt block
+                if (elapsed < totalBootTime) {
+                    if (static_cast<int>(elapsed * 2.5) % 2 == 0) {
+                        ImGui::Text("_");
+                    }
+                }
+            }
+            ImGui::End();
+            ImGui::PopStyleVar(2);
+            ImGui::PopStyleColor();
+        }
+        else if (osState == OSState::Running) {
+            // 1. Desktop background & Desktop Icons
+            DrawWallpaper(desktop);
+            DrawDesktopIcons(desktop);
+
+            // 2. Applications
+            if (desktop.showFiles)    DrawFilesWindow(desktop.showFiles);
+            if (desktop.showSysInfo)  DrawSysInfoWindow(desktop.showSysInfo);
+            if (desktop.showTaskMgr)  DrawTaskManager(desktop.showTaskMgr);
+            if (desktop.showSettings) DrawSettingsWindow(desktop);
+            if (desktop.showWordle)   DrawWordleWindow(desktop.showWordle);
+            if (desktop.showAI)       DrawAiWindow(desktop.showAI);
+            if (desktop.showCalc)     DrawCalculatorWindow(desktop.showCalc);
+            if (desktop.showReels)    DrawReelsWindow(desktop.showReels);
+
+            // 3. Taskbar & Start Menu
+            DrawTaskbar(desktop);
+            DrawStartMenu(desktop);
+        }
 
         if (desktop.shutdownRequested) {
             glfwSetWindowShouldClose(window, GLFW_TRUE);
@@ -144,5 +239,6 @@ int main() {
     ImGui::DestroyContext();
     glfwDestroyWindow(window);
     glfwTerminate();
+
     return 0;
 }
