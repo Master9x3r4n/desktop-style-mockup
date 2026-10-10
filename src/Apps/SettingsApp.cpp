@@ -84,7 +84,7 @@ void DrawSettingsWindow(Desktop& d) {
 
         // 2. Accent Color
         ImGui::Text("Accent Color:");
-        const char* colors[] = {"Sussy Blue", "Ok Poilet", "Cutest Green", "Gabby Orange"};
+        const char* colors[] = {"Sussy Blue", "Ok Porple", "Cutest Green", "Gabby Orange"};
         for (int i = 0; i < 4; i++) {
             ImVec4 col = GetAccentColor(i);
             ImGui::PushStyleColor(ImGuiCol_Button, col);

@@ -97,7 +97,7 @@ static void DrawSystemTray(Desktop& d, float barWidth, float barHeight) {
     float startX = barWidth - totalTrayW - marginR;
     float startY = (barHeight - elemH) * 0.5f;
 
-    // 1. VOL Button
+    // VOl button
     ImGui::SetCursorPos(ImVec2(startX, startY));
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, px(8.0f));
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.18f, 0.20f, 0.28f, 0.70f));
@@ -108,7 +108,7 @@ static void DrawSystemTray(Desktop& d, float barWidth, float barHeight) {
     ImGui::PopStyleColor(2);
     ImGui::PopStyleVar();
 
-    // Volume Card Popup
+    // vol popup slider
     float flyoutW = px(260.0f);
     float flyoutX = startX + (volW - flyoutW) * 0.5f;
     if (flyoutX + flyoutW > barWidth - marginR) {
@@ -142,7 +142,7 @@ static void DrawSystemTray(Desktop& d, float barWidth, float barHeight) {
     }
     ImGui::PopStyleVar(2);
 
-    // 2. Clock & Date Pill
+    // clock
     float clockX = startX + volW + spacing;
     ImGui::SetCursorPos(ImVec2(clockX, startY));
     ImGui::InvisibleButton("##clock_tray", ImVec2(clockW, elemH));
@@ -151,7 +151,6 @@ static void DrawSystemTray(Desktop& d, float barWidth, float barHeight) {
     ImVec2 cMin = ImGui::GetItemRectMin();
     ImVec2 cMax = ImGui::GetItemRectMax();
     ImDrawList* dl = ImGui::GetWindowDrawList();
-
     dl->AddRectFilled(cMin, cMax, clockHovered ? IM_COL32(255, 255, 255, 22) : IM_COL32(255, 255, 255, 10), px(8.0f));
     dl->AddRect(cMin, cMax, IM_COL32(255, 255, 255, 18), px(8.0f));
 
@@ -160,13 +159,12 @@ static void DrawSystemTray(Desktop& d, float barWidth, float barHeight) {
     float textGap = px(1.0f);
     float totalTextH = szTime.y + szDate.y + textGap;
     float textTopY = cMin.y + (elemH - totalTextH) * 0.5f;
-
     dl->AddText(ImVec2(cMin.x + (clockW - szTime.x) * 0.5f, textTopY),
                 IM_COL32(255, 255, 255, 245), timeBuf);
     dl->AddText(ImVec2(cMin.x + (clockW - szDate.x) * 0.5f, textTopY + szTime.y + textGap),
                 IM_COL32(190, 195, 205, 200), dateBuf);
 
-    // 3. Tray PWR Button
+    // PWR button
     float pwrX = clockX + clockW + spacing;
     ImGui::SetCursorPos(ImVec2(pwrX, startY));
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, px(8.0f));
@@ -187,11 +185,9 @@ void DrawTaskbar(Desktop& d) {
     ImGui::SetNextWindowPos(ImVec2(0, disp.y - barH));
     ImGui::SetNextWindowSize(ImVec2(disp.x, barH));
     ImGui::SetNextWindowBgAlpha(0.88f);
-
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
                              ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar |
                              ImGuiWindowFlags_NoBringToFrontOnFocus;
-
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGui::Begin("##taskbar", nullptr, flags);
@@ -206,29 +202,27 @@ void DrawTaskbar(Desktop& d) {
 
     float elemH = px(44);
     float elemY = (barH - elemH) * 0.5f;
-
     float startW = px(50);
     float appW = px(58);
     float spacing = px(6);
 
-    // 4 apps on taskbar: SET (Settings), FIL (Files), SYS (System), TSK (Task Manager)
+    // settings, files, systems
     int appCount = 4;
     float groupWidth = startW + spacing + (appCount * appW) + ((appCount - 1) * spacing);
-
     float startX = px(12.0f);
     if (d.taskbarAlign == TaskbarAlignment::Center) {
         startX = (disp.x - groupWidth) * 0.5f;
         if (startX < px(12.0f)) startX = px(12.0f);
     }
 
-    // 1. Start Button
+    // start menu button
     ImGui::SetCursorPos(ImVec2(startX, elemY));
     if (StartMenuButton(d)) {
         d.startOpen = !d.startOpen;
         d.startJustOpened = d.startOpen;
     }
 
-    // 2. Apps in order: Settings, File, System, Task Manager
+    // Settings, File, System, Task Manager
     float curX = startX + startW + spacing;
 
     // SET (Settings)
@@ -254,7 +248,7 @@ void DrawTaskbar(Desktop& d) {
     if (TaskbarAppButton("btn_task", "TSK", d.showTaskMgr, d.accentColorIdx))
         d.showTaskMgr = !d.showTaskMgr;
 
-    // 3. System Tray (VOL, Clock, PWR)
+    // System Tray (VOL, Clock, PWR)
     DrawSystemTray(d, disp.x, barH);
 
     ImGui::End();

@@ -1,7 +1,7 @@
 #include "StartMenu.h"
 #include <cfloat>
 
-static bool StartMenuAppRow(const char* title, const char* subtitle, ImU32 tileCol, const char* badge) {
+static bool DrawPinnedApp(const char* title, const char* subtitle, ImU32 tileCol, const char* badge) {
     ImGui::PushID(title);
     float rowW = ImGui::GetContentRegionAvail().x;
     float rowH = px(44.0f);
@@ -35,7 +35,7 @@ static bool StartMenuAppRow(const char* title, const char* subtitle, ImU32 tileC
     return clicked;
 }
 
-static void RecommendedItem(const char* name, const char* timeAgo) {
+static void DocumentRow(const char* name, const char* timeAgo) {
     ImGui::PushID(name);
     float rowW = ImGui::GetContentRegionAvail().x;
     float rowH = px(30.0f);
@@ -107,35 +107,50 @@ void DrawStartMenu(Desktop& d) {
 
     ImGui::Spacing();
 
-    // Pinned Apps Section
+    // pinned apps
     ImGui::TextDisabled("Pinned Apps");
     ImGui::Spacing();
-
     ImGui::BeginChild("pinned_scroll", ImVec2(0, px(240)), false);
     {
-        if (StartMenuAppRow("File Explorer", "Browse files and directories", IM_COL32(230, 160, 40, 255), "EXP")) {
-            d.showFiles = true; d.startOpen = false; ImGui::SetWindowFocus("File Explorer");
+        if (DrawPinnedApp("File Explorer", "Browse files and directories", IM_COL32(230, 160, 40, 255), "EXP")) {
+            d.showFiles = true; 
+            d.startOpen = false; 
+            ImGui::SetWindowFocus("File Explorer");
         }
-        if (StartMenuAppRow("System Info", "Hardware & OS specs", IM_COL32(50, 140, 240, 255), "SYS")) {
-            d.showSysInfo = true; d.startOpen = false; ImGui::SetWindowFocus("System Info");
+        if (DrawPinnedApp("System Info", "Hardware & OS specs", IM_COL32(50, 140, 240, 255), "SYS")) {
+            d.showSysInfo = true; 
+            d.startOpen = false; 
+            ImGui::SetWindowFocus("System Info");
         }
-        if (StartMenuAppRow("Task Manager", "Processes and resource activity", IM_COL32(40, 180, 115, 255), "TSK")) {
-            d.showTaskMgr = true; d.startOpen = false; ImGui::SetWindowFocus("Task Manager");
+        if (DrawPinnedApp("Task Manager", "Processes and resource activity", IM_COL32(40, 180, 115, 255), "TSK")) {
+            d.showTaskMgr = true; 
+            d.startOpen = false; 
+            ImGui::SetWindowFocus("Task Manager");
         }
-        if (StartMenuAppRow("Settings", "Personalization & preferences", IM_COL32(110, 125, 145, 255), "SET")) {
-            d.showSettings = true; d.startOpen = false; ImGui::SetWindowFocus("Settings");
+        if (DrawPinnedApp("Settings", "Personalization & preferences", IM_COL32(110, 125, 145, 255), "SET")) {
+            d.showSettings = true; 
+            d.startOpen = false; 
+            ImGui::SetWindowFocus("Settings");
         }
-        if (StartMenuAppRow("Wuhdle", "Word guessing challenge", IM_COL32(83, 141, 78, 255), "WUH")) {
-            d.showWordle = true; d.startOpen = false; ImGui::SetWindowFocus("Wuhdle");
+        if (DrawPinnedApp("Wuhdle", "Wuhdleeee", IM_COL32(83, 141, 78, 255), "WUH")) {
+            d.showWordle = true; 
+            d.startOpen = false; 
+            ImGui::SetWindowFocus("Wuhdle");
         }
-        if (StartMenuAppRow("ChicaGPT", "AI conversational partner", IM_COL32(210, 80, 160, 255), "GPT")) {
-            d.showAI = true; d.startOpen = false; ImGui::SetWindowFocus("ChicaGPT");
+        if (DrawPinnedApp("ChicaGPT", "Find out whats inside your head", IM_COL32(210, 80, 160, 255), "GPT")) {
+            d.showAI = true; 
+            d.startOpen = false; 
+            ImGui::SetWindowFocus("ChicaGPT");
         }
-        if (StartMenuAppRow("Calculator", "Basic arithmetic operations", IM_COL32(210, 110, 50, 255), "CAL")) {
-            d.showCalc = true; d.startOpen = false; ImGui::SetWindowFocus("Calculator");
+        if (DrawPinnedApp("Calculator", "For doing math", IM_COL32(210, 110, 50, 255), "CAL")) {
+            d.showCalc = true; 
+            d.startOpen = false; 
+            ImGui::SetWindowFocus("Calculator");
         }
-        if (StartMenuAppRow("Reels", "Short vertical media feed", IM_COL32(230, 45, 85, 255), "REL")) {
-            d.showReels = true; d.startOpen = false; ImGui::SetWindowFocus("Reels");
+        if (DrawPinnedApp("Reels", "When Sas3000 is boring", IM_COL32(230, 45, 85, 255), "REL")) {
+            d.showReels = true; 
+            d.startOpen = false; 
+            ImGui::SetWindowFocus("Reels");
         }
     }
     ImGui::EndChild();
@@ -144,15 +159,14 @@ void DrawStartMenu(Desktop& d) {
     ImGui::Separator();
     ImGui::Spacing();
 
-    // Recent Documents Section
+    // Recent Documents (mock data)
     ImGui::TextDisabled("Recent Documents");
     ImGui::Spacing();
+    DocumentRow("scheduler.cpp", "25m ago");
+    DocumentRow("output2.pptx", "2h ago");
+    DocumentRow("notes.txt", "Yesterday");
 
-    RecommendedItem("scheduler.cpp", "25m ago");
-    RecommendedItem("output2.pptx", "2h ago");
-    RecommendedItem("notes.txt", "Yesterday");
-
-    // Footer (User & Power)
+    // User and Power (footer area)
     float footerH = px(52.0f);
     float footerY = h - footerH;
     ImGui::SetCursorPosY(footerY - px(8.0f));
