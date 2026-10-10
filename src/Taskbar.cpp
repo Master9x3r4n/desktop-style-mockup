@@ -1,4 +1,6 @@
 #include "Taskbar.h"
+#include "IconRenderer.h"
+#include <string>
 #include <ctime>
 #include <cstdio>
 #include <cfloat>
@@ -13,7 +15,8 @@ static bool TaskbarAppButton(const char* id, const char* label, bool isOpen, int
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.28f, 0.32f, 0.44f, 0.95f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(0.19f, 0.22f, 0.30f, 1.0f));
 
-    bool clicked = ImGui::Button(label, btnSize);
+    std::string btnId = "##" + std::string(id ? id : label);
+    bool clicked = ImGui::Button(btnId.c_str(), btnSize);
 
     ImGui::PopStyleColor(3);
     ImGui::PopStyleVar();
@@ -23,6 +26,13 @@ static bool TaskbarAppButton(const char* id, const char* label, bool isOpen, int
     ImDrawList* dl = ImGui::GetWindowDrawList();
 
     dl->AddRect(min, max, IM_COL32(255, 255, 255, isOpen ? 35 : 15), px(8.0f));
+
+    float iconSz = px(32.0f);
+    ImVec2 iMin(min.x + (btnSize.x - iconSz) * 0.5f, min.y + (btnSize.y - iconSz) * 0.5f - (isOpen ? px(2.0f) : 0.0f));
+    ImVec2 iMax(iMin.x + iconSz, iMin.y + iconSz);
+
+    std::string badgeText = std::string(label).substr(0, 3);
+    DrawIcon(dl, iMin, iMax, iconSz, label, GetAccentColorU32(accentIdx), badgeText.c_str());
 
     if (isOpen) {
         float indW = px(20.0f);
@@ -322,25 +332,25 @@ void DrawTaskbar(Desktop& d) {
 
     // SET (Settings)
     ImGui::SetCursorPos(ImVec2(curX, elemY));
-    if (TaskbarAppButton("btn_sett", "SET", d.showSettings, d.accentColorIdx))
+    if (TaskbarAppButton("btn_sett", "Settings", d.showSettings, d.accentColorIdx))
         d.showSettings = !d.showSettings;
     curX += appW + spacing;
 
     // FIL (Files)
     ImGui::SetCursorPos(ImVec2(curX, elemY));
-    if (TaskbarAppButton("btn_files", "FIL", d.showFiles, d.accentColorIdx))
+    if (TaskbarAppButton("btn_files", "File Explorer", d.showFiles, d.accentColorIdx))
         d.showFiles = !d.showFiles;
     curX += appW + spacing;
 
     // SYS (System)
     ImGui::SetCursorPos(ImVec2(curX, elemY));
-    if (TaskbarAppButton("btn_sys", "SYS", d.showSysInfo, d.accentColorIdx))
+    if (TaskbarAppButton("btn_sys", "System Info", d.showSysInfo, d.accentColorIdx))
         d.showSysInfo = !d.showSysInfo;
     curX += appW + spacing;
 
     // TSK (Task Manager)
     ImGui::SetCursorPos(ImVec2(curX, elemY));
-    if (TaskbarAppButton("btn_task", "TSK", d.showTaskMgr, d.accentColorIdx))
+    if (TaskbarAppButton("btn_task", "Task Manager", d.showTaskMgr, d.accentColorIdx))
         d.showTaskMgr = !d.showTaskMgr;
 
     // System Tray (VOL, Clock, PWR)
