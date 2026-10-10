@@ -87,13 +87,14 @@ static void DrawSystemTray(Desktop& d, float barWidth, float barHeight) {
     std::strftime(dateBuf, sizeof(dateBuf), "%m/%d/%Y", lt);
 
     float volW = px(56);
+    float netW = px(56);
     float clockW = px(120);
     float pwrW = px(52);
     float elemH = px(44);
     float spacing = px(8);
     float marginR = px(12);
 
-    float totalTrayW = volW + spacing + clockW + spacing + pwrW;
+    float totalTrayW = volW + spacing + netW + spacing + clockW + spacing + pwrW;
     float startX = barWidth - totalTrayW - marginR;
     float startY = (barHeight - elemH) * 0.5f;
 
@@ -142,8 +143,102 @@ static void DrawSystemTray(Desktop& d, float barWidth, float barHeight) {
     }
     ImGui::PopStyleVar(2);
 
+    // network
+    float netX = startX + volW + spacing;
+    ImGui::SetCursorPos(ImVec2(netX, startY));
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, px(8.0f));
+    ImGui::PushStyleColor(ImGuiCol_Button, d.wifiEnabled ? ImVec4(0.18f, 0.20f, 0.28f, 0.70f) : ImVec4(0.25f, 0.15f, 0.15f, 0.70f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.28f, 0.38f, 0.90f));
+    if (ImGui::Button("NET", ImVec2(netW, elemH))) {
+        ImGui::OpenPopup("NetworkFlyout");
+    }
+    ImGui::PopStyleColor(2);
+    ImGui::PopStyleVar();
+
+    // Network flyout popup
+    float netFlyoutW = px(300.0f);
+    float netFlyoutX = netX + (netW - netFlyoutW) * 0.5f;
+    if (netFlyoutX + netFlyoutW > barWidth - marginR) {
+        netFlyoutX = barWidth - marginR - netFlyoutW;
+    }
+    if (netFlyoutX < px(12.0f)) netFlyoutX = px(12.0f);
+
+    ImGui::SetNextWindowPos(ImVec2(netFlyoutX, ImGui::GetIO().DisplaySize.y - barHeight - px(10.0f)),
+        ImGuiCond_Always, ImVec2(0.0f, 1.0f));
+    ImGui::SetNextWindowSize(ImVec2(netFlyoutW, 0.0f));
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, px(12.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(px(16), px(12)));
+    if (ImGui::BeginPopup("NetworkFlyout", ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar)) {
+        ImGui::Text("Network & Internet");
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        ImGui::Checkbox("Wi-Fi", &d.wifiEnabled);
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (!d.wifiEnabled) {
+            ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Wi-Fi is turned off.");
+        }
+        else {
+            ImGui::TextDisabled("Available Networks");
+            ImGui::Spacing();
+
+            struct MockNetwork {
+                const char* ssid;
+                const char* signal;
+                bool secured;
+            };
+
+            static const MockNetwork mockNetworks[] = {
+                { "Home_WiFi_5G", "Excellent (5 GHz)", true },
+                { "Office_Guest_Network", "Good (2.4 GHz)", true },
+                { "Wendyslop_Free_WiFi", "Super Weak", false },
+                { "CSOPESY_5G", "Strong", true },
+                { "Neighbor_WiFi", "Weak", true }
+            };
+
+            for (int i = 0; i < 5; ++i) {
+                bool isConnected = (d.connectedNetworkIdx == i);
+                ImGui::PushID(i);
+
+                if (isConnected) {
+                    ImGui::TextColored(GetAccentColor(d.accentColorIdx), "%s", mockNetworks[i].ssid);
+                    ImGui::TextColored(ImVec4(0.4f, 0.85f, 0.4f, 1.0f), "  Connected | %s", mockNetworks[i].signal);
+                    ImGui::SameLine(netFlyoutW - px(95));
+                    if (ImGui::Button("Disconnect")) {
+                        d.connectedNetworkIdx = -1;
+                    }
+                }
+                else {
+                    ImGui::Text("%s", mockNetworks[i].ssid);
+                    ImGui::TextColored(ImVec4(0.6f, 0.65f, 0.75f, 1.0f), "  %s | %s",
+                        mockNetworks[i].signal, mockNetworks[i].secured ? "Secured" : "Open");
+                    ImGui::SameLine(netFlyoutW - px(85));
+                    if (ImGui::Button("Connect")) {
+                        d.connectedNetworkIdx = i;
+                    }
+                }
+
+                ImGui::PopID();
+                if (i < 4) {
+                    ImGui::Spacing();
+                    ImGui::Separator();
+                    ImGui::Spacing();
+                }
+            }
+        }
+
+        ImGui::EndPopup();
+    }
+    ImGui::PopStyleVar(2);
+
     // clock
-    float clockX = startX + volW + spacing;
+    float clockX = netX + netW + spacing;
     ImGui::SetCursorPos(ImVec2(clockX, startY));
     ImGui::InvisibleButton("##clock_tray", ImVec2(clockW, elemH));
     bool clockHovered = ImGui::IsItemHovered();

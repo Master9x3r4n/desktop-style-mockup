@@ -10,6 +10,7 @@
 #include "Apps/AiApp.h"
 #include "Apps/CalculatorApp.h"
 #include "Apps/ReelsApp.h"
+#include "Apps/Terminal.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -163,6 +164,7 @@ int main() {
             if (desktop.showAI)       DrawAiWindow(desktop.showAI);
             if (desktop.showCalc)     DrawCalculatorWindow(desktop.showCalc);
             if (desktop.showReels)    DrawReelsWindow(desktop.showReels);
+            if (desktop.showTerminal) DrawTerminalWindow(desktop.showTerminal, desktop);
 
             // Taskbar & Start Menu
             DrawTaskbar(desktop);

@@ -21,6 +21,7 @@ struct Desktop {
     bool showAI = false;
     bool showCalc = false;
     bool showReels = false;
+    bool showTerminal = false;
 
     bool startOpen = false;
     bool startJustOpened = false;
@@ -32,6 +33,10 @@ struct Desktop {
     TaskbarAlignment taskbarAlign = TaskbarAlignment::Left;
     int accentColorIdx = 0; // 0: Sky Blue, 1: Violet, 2: Emerald, 3: Coral
     int wallpaperPreset = 0; // 0: Classic, 1: Grass, 2: Magic, 3: Slop
+
+    // Network Settings
+    bool wifiEnabled = true;
+	int connectedNetworkIdx = 0; // Index of the currently connected mock network
 };
 
 inline ImVec4 GetAccentColor(int idx) {
