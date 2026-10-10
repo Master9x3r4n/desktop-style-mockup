@@ -152,6 +152,11 @@ void DrawStartMenu(Desktop& d) {
             d.startOpen = false; 
             ImGui::SetWindowFocus("Reels");
         }
+        if (DrawPinnedApp("Terminal", "Command prompt & shell", IM_COL32(40, 42, 54, 255), "TRM")) {
+            d.showTerminal = true;
+            d.startOpen = false;
+            ImGui::SetWindowFocus("Terminal");
+        }
     }
     ImGui::EndChild();
 
