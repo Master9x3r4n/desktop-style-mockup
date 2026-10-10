@@ -57,6 +57,7 @@ static void EnsureReelLoaded(int idx) {
     if (r.attempted) return;
     r.attempted = true;
 
+    // search across 3 possible directories
     std::string fileName = "reel" + std::to_string(idx + 1) + ".jpg";
     std::string p1 = std::string(PROJECT_DIR) + "/assets/reels/" + fileName;
     std::string p2 = std::string("assets/reels/") + fileName;
@@ -95,7 +96,7 @@ void DrawReelsWindow(bool& open) {
     ImVec2 cardP0 = contentP0;
     ImVec2 cardP1(cardP0.x + cardW, cardP0.y + cardH);
 
-    // 1. Image Viewer (Cover 9:16 aspect ratio)
+    // /image Viewer (Cover 9:16 aspect ratio)
     if (cur.tex) {
         float imgAspect = (float)cur.w / (float)cur.h;
         float frameAspect = cardW / cardH;
@@ -124,7 +125,6 @@ void DrawReelsWindow(bool& open) {
                     IM_COL32(140, 145, 160, 180), "Place in reels/ folder");
     }
 
-    // Border and bottom vignette
     dl->AddRect(cardP0, cardP1, IM_COL32(255, 255, 255, 30), px(10.0f));
     dl->AddRectFilledMultiColor(
         ImVec2(cardP0.x, cardP1.y - px(130.0f)), cardP1,
@@ -132,13 +132,13 @@ void DrawReelsWindow(bool& open) {
         IM_COL32(0, 0, 0, 220), IM_COL32(0, 0, 0, 220)
     );
 
-    // Creator info (bottom overlay)
+    // reels creator
     float bTextY = cardP1.y - px(64.0f);
     dl->AddText(ImVec2(cardP0.x + px(12), bTextY), IM_COL32(255, 255, 255, 255), cur.user);
     dl->AddText(ImVec2(cardP0.x + px(12), bTextY + ImGui::GetFontSize() + px(2)),
                 IM_COL32(220, 225, 235, 220), cur.caption);
 
-    // 2. Right Actions: Compact vertical stack with Like & Comment counts retained
+    // action bar
     float actionX = cardP1.x + px(10.0f);
     float btnH = px(36.0f);
     float gap = px(6.0f);
@@ -148,13 +148,13 @@ void DrawReelsWindow(bool& open) {
 
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, px(8.0f));
 
-    // A. Up Button (Previous)
+    // swipe up
     ImGui::SetCursorScreenPos(ImVec2(actionX, clusterStartY));
     if (ImGui::Button("^", ImVec2(actionW, btnH))) {
         gCurrentReel = (gCurrentReel - 1 + 5) % 5;
     }
 
-    // B. Like Button + Like Count
+    // likes
     float curY = clusterStartY + btnH + gap;
     ImGui::SetCursorScreenPos(ImVec2(actionX, curY));
     ImVec4 likeCol = cur.liked ? ImVec4(0.85f, 0.18f, 0.28f, 0.90f) : ImVec4(0.20f, 0.22f, 0.30f, 0.70f);
@@ -171,7 +171,7 @@ void DrawReelsWindow(bool& open) {
     ImGui::SetCursorScreenPos(ImVec2(actionX + (actionW - lSz.x) * 0.5f, curY + btnH + px(1.0f)));
     ImGui::TextDisabled("%s", likeStr);
 
-    // C. Comment Button + Comment Count
+    // Comments
     curY += btnH + px(18.0f) + gap;
     ImGui::SetCursorScreenPos(ImVec2(actionX, curY));
     if (ImGui::Button("Comment", ImVec2(actionW, btnH))) {
@@ -184,12 +184,12 @@ void DrawReelsWindow(bool& open) {
     ImGui::SetCursorScreenPos(ImVec2(actionX + (actionW - cSz.x) * 0.5f, curY + btnH + px(1.0f)));
     ImGui::TextDisabled("%s", comStr);
 
-    // D. Share Button
+    // Share
     curY += btnH + px(18.0f) + gap;
     ImGui::SetCursorScreenPos(ImVec2(actionX, curY));
     ImGui::Button("Share", ImVec2(actionW, btnH));
 
-    // E. Down Button (Next)
+    // swipe down
     curY += btnH + gap;
     ImGui::SetCursorScreenPos(ImVec2(actionX, curY));
     if (ImGui::Button("v", ImVec2(actionW, btnH))) {
