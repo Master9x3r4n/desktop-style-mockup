@@ -1,4 +1,5 @@
 #include "StartMenu.h"
+#include "IconRenderer.h"
 #include <cfloat>
 
 static bool DrawPinnedApp(const char* title, const char* subtitle, ImU32 tileCol, const char* badge) {
@@ -20,11 +21,8 @@ static bool DrawPinnedApp(const char* title, const char* subtitle, ImU32 tileCol
     float iconSz = px(32.0f);
     ImVec2 iMin(p.x + px(6), p.y + (rowH - iconSz) * 0.5f);
     ImVec2 iMax(iMin.x + iconSz, iMin.y + iconSz);
-    dl->AddRectFilled(iMin, iMax, tileCol, px(6.0f));
-
-    ImVec2 bSz = ImGui::CalcTextSize(badge);
-    dl->AddText(ImVec2(iMin.x + (iconSz - bSz.x) * 0.5f, iMin.y + (iconSz - bSz.y) * 0.5f),
-                IM_COL32(255, 255, 255, 255), badge);
+    
+    DrawIcon(dl, iMin, iMax, iconSz, title, tileCol, badge);
 
     float tx = iMax.x + px(12.0f);
     dl->AddText(ImVec2(tx, p.y + px(4.0f)), IM_COL32(240, 244, 252, 255), title);
