@@ -54,6 +54,7 @@ target_link_libraries(imgui PUBLIC glfw OpenGL::GL)
 set(APP_SOURCES
     src/main.cpp
     src/Wallpaper.cpp
+    src/IconRenderer.cpp
     src/Taskbar.cpp
     src/StartMenu.cpp
     src/Apps/FileExplorer.cpp
