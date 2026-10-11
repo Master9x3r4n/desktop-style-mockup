@@ -100,7 +100,7 @@ static void DrawSystemTray(Desktop& d, float barWidth, float barHeight) {
     float netW = px(56);
     float clockW = px(120);
     float pwrW = px(52);
-    float elemH = px(44);
+    float elemH = px(32);
     float spacing = px(8);
     float marginR = px(12);
 
@@ -108,16 +108,26 @@ static void DrawSystemTray(Desktop& d, float barWidth, float barHeight) {
     float startX = barWidth - totalTrayW - marginR;
     float startY = (barHeight - elemH) * 0.5f;
 
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+
     // VOl button
     ImGui::SetCursorPos(ImVec2(startX, startY));
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, px(8.0f));
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.18f, 0.20f, 0.28f, 0.70f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.28f, 0.38f, 0.90f));
-    if (ImGui::Button("VOL", ImVec2(volW, elemH))) {
+    if (ImGui::Button("##tray_vol", ImVec2(volW, elemH))) {
         ImGui::OpenPopup("VolumeFlyout");
     }
     ImGui::PopStyleColor(2);
     ImGui::PopStyleVar();
+
+    // draw icon
+    ImVec2 vMin = ImGui::GetItemRectMin();
+    ImVec2 vMax = ImGui::GetItemRectMax();
+    float iconSz = px(24.0f);
+    ImVec2 viMin(vMin.x + (volW - iconSz) * 0.5f, vMin.y + (elemH - iconSz) * 0.5f);
+    ImVec2 viMax(viMin.x + iconSz, viMin.y + iconSz);
+    DrawIcon(dl, viMin, viMax, iconSz, "Volume", IM_COL32(60, 70, 90, 255), "VOL");
 
     // vol popup slider
     float flyoutW = px(260.0f);
@@ -159,11 +169,18 @@ static void DrawSystemTray(Desktop& d, float barWidth, float barHeight) {
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, px(8.0f));
     ImGui::PushStyleColor(ImGuiCol_Button, d.wifiEnabled ? ImVec4(0.18f, 0.20f, 0.28f, 0.70f) : ImVec4(0.25f, 0.15f, 0.15f, 0.70f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.28f, 0.38f, 0.90f));
-    if (ImGui::Button("NET", ImVec2(netW, elemH))) {
+    if (ImGui::Button("##trey_net", ImVec2(netW, elemH))) {
         ImGui::OpenPopup("NetworkFlyout");
     }
     ImGui::PopStyleColor(2);
     ImGui::PopStyleVar();
+
+    // draw icon
+    ImVec2 nMin = ImGui::GetItemRectMin();
+    ImVec2 nMax = ImGui::GetItemRectMax();
+    ImVec2 niMin(nMin.x + (netW - iconSz) * 0.5f, nMin.y + (elemH - iconSz) * 0.5f);
+    ImVec2 niMax(niMin.x + iconSz, niMin.y + iconSz);
+    DrawIcon(dl, niMin, niMax, iconSz, "Network", d.wifiEnabled ? IM_COL32(60, 70, 90, 255) : IM_COL32(180, 50, 50, 255), "NET");
 
     // Network flyout popup
     float netFlyoutW = px(300.0f);
@@ -255,7 +272,6 @@ static void DrawSystemTray(Desktop& d, float barWidth, float barHeight) {
 
     ImVec2 cMin = ImGui::GetItemRectMin();
     ImVec2 cMax = ImGui::GetItemRectMax();
-    ImDrawList* dl = ImGui::GetWindowDrawList();
     dl->AddRectFilled(cMin, cMax, clockHovered ? IM_COL32(255, 255, 255, 22) : IM_COL32(255, 255, 255, 10), px(8.0f));
     dl->AddRect(cMin, cMax, IM_COL32(255, 255, 255, 18), px(8.0f));
 
@@ -276,11 +292,18 @@ static void DrawSystemTray(Desktop& d, float barWidth, float barHeight) {
     ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(0.72f, 0.16f, 0.16f, 0.75f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.88f, 0.22f, 0.22f, 0.95f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(0.55f, 0.12f, 0.12f, 1.0f));
-    if (ImGui::Button("PWR", ImVec2(pwrW, elemH))) {
+    if (ImGui::Button("##trey_pwr", ImVec2(pwrW, elemH))) {
         d.shutdownRequested = true;
     }
     ImGui::PopStyleColor(3);
     ImGui::PopStyleVar();
+
+    // draw icon
+    ImVec2 pMin = ImGui::GetItemRectMin();
+    ImVec2 pMax = ImGui::GetItemRectMax();
+    ImVec2 piMin(pMin.x + (pwrW - iconSz) * 0.5f, pMin.y + (elemH - iconSz) * 0.5f);
+    ImVec2 piMax(piMin.x + iconSz, piMin.y + iconSz);
+    DrawIcon(dl, piMin, piMax, iconSz, "Power", IM_COL32(180, 40, 40, 255), "PWR");
 }
 
 void DrawTaskbar(Desktop& d) {

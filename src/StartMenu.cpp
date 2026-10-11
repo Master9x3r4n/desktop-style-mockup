@@ -198,11 +198,20 @@ void DrawStartMenu(Desktop& d) {
     ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(0.72f, 0.16f, 0.16f, 0.80f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.88f, 0.22f, 0.22f, 0.95f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(0.55f, 0.12f, 0.12f, 1.0f));
-    if (ImGui::Button("PWR", ImVec2(pwrW, pwrH))) {
+    if (ImGui::Button("##trey_pwr", ImVec2(pwrW, pwrH))) {
         d.shutdownRequested = true;
     }
     ImGui::PopStyleColor(3);
     ImGui::PopStyleVar();
+
+    // draw icon
+    float iconSz = px(32.0f);
+    float elemH = px(32);
+    ImVec2 pMin = ImGui::GetItemRectMin();
+    ImVec2 pMax = ImGui::GetItemRectMax();
+    ImVec2 piMin(pMin.x + (pwrW - iconSz) * 0.5f, pMin.y + (elemH - iconSz) * 0.5f);
+    ImVec2 piMax(piMin.x + iconSz, piMin.y + iconSz);
+    DrawIcon(dl, piMin, piMax, iconSz, "Power", IM_COL32(180, 40, 40, 255), "PWR");
 
     bool hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows |
                                           ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
