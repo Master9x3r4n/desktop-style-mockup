@@ -20,9 +20,6 @@
 #include <vector>
 #include <cstring>
 
-static void LoadFonts(ImGuiIO& io, float sizePx);
-static void ApplyOSTheme();
-
 enum class OSState {
     Booting,
     Running
@@ -33,6 +30,9 @@ struct BiosLine {
     const char* text;   // Content string
     ImVec4 color;       // Text color
 };
+
+static void LoadFonts(ImGuiIO& io, float sizePx, OSState OSState);
+static void ApplyOSTheme();
 
 
 int main() {
@@ -52,48 +52,52 @@ int main() {
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = nullptr;
 
-    // helper functions for fonts and theme
-    LoadFonts(io, kFontPx);
-    ApplyOSTheme();
-
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
+
+    // Boot screen and sequence data
+    OSState osState = OSState::Booting;
+    double startTime = glfwGetTime();
+    double totalBootTime = 5.0; // Duration in seconds before showing the desktop
+
+    ImVec4 c_White = ImVec4(0.90f, 0.90f, 0.90f, 1.0f);
+    ImVec4 c_Gray = ImVec4(0.55f, 0.55f, 0.55f, 1.0f);
+
+    std::vector<BiosLine> biosSequence = {
+        { 0.0, "CSOPESY Megatrends", c_White },
+        { 0.0, "Released: 10/09/2026", c_White },
+        { 0.0, "Group 4 - CSOPESY S04 (C) 2026 CSOPESY Megatrends, Inc.", c_White },
+
+        { 1.0, "Testing System Memory... 8192MB OK", c_Gray },
+
+        { 1.5, "CPU: Custom Virtual x86 Processor @ 3.0GHz", c_Gray },
+        { 1.5, "BIOS Version: CSOPESY Custom BIOS v1.0", c_Gray },
+
+        { 2.0, "Detected Storages...", c_White },
+        { 2.0, "  [Target 0] NVMe: CSOPESY-SSD-256GB --> OK (S.M.A.R.T. Healthy)", c_Gray },
+        { 2.5, "  [Target 1] USB: Generic Boot Media Found", c_Gray },
+
+        { 3.0, "Booting CSOPESY OS...", c_White }
+    };
+
+    // Load initial font and theme
+    bool fontSwapped = false;
+    LoadFonts(io, kFontPx, osState);
+    ApplyOSTheme();
 
     glfwSetWindowCloseCallback(window, [](GLFWwindow* w) {
         glfwSetWindowShouldClose(w, GLFW_FALSE);
     });
 
     Desktop desktop;
-
-    // ==========================================================
-    // BIOS BOOT CONFIGURATION & SEQUENCE DATA
-    // ==========================================================
-    OSState osState = OSState::Booting;
-    double startTime = glfwGetTime();
-    double totalBootTime = 5.0; // Duration in seconds before showing the desktop
-
-    ImVec4 c_White  = ImVec4(0.90f, 0.90f, 0.90f, 1.0f);
-    ImVec4 c_Gray   = ImVec4(0.55f, 0.55f, 0.55f, 1.0f);
-    ImVec4 c_Green  = ImVec4(0.00f, 0.85f, 0.00f, 1.0f);
-    ImVec4 c_Amber  = ImVec4(0.90f, 0.55f, 0.00f, 1.0f);
-
-    std::vector<BiosLine> biosSequence = {
-        { 0.0, "CSOPESY Megatrends", c_White },
-        { 0.0, "Released: 06/07/2026", c_White },
-        { 0.0, "CSOPESY S04 (C) 2026 CSOPESY Megatrends, Inc.", c_White },
-
-        { 1.0, "Testing System Memory... 8192MB OK", c_White },
-
-        { 1.5, "CPU: Custom Virtual x86 Processor @ 3.80GHz", c_Gray },
-        { 1.5, "Speed: 3800 MHz  //  Cores: 8  //  Threads: 16", c_Gray },
-
-        { 2.0, "Detected Storages...", c_White },
-        { 2.0, "  [Target 0] NVMe: CSOPESY-SSD-512GB --> OK (S.M.A.R.T. Healthy)", c_Gray },
-        { 2.5, "  [Target 1] USB: Generic Boot Media Found", c_Gray },
-        { 3.0, "Booting CSOPESY OS...", c_Green }
-    };
+    
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
+
+        if (osState == OSState::Running && !fontSwapped) {
+            LoadFonts(io, kFontPx, osState);
+            fontSwapped = true;
+        }
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -104,11 +108,6 @@ int main() {
             if (elapsed >= totalBootTime) {
                 osState = OSState::Running;
             }
-
-            // // Keyboard Override: Press Enter or Escape to instantly skip the BIOS sequence
-            // if (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_Escape) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter)) {
-            //     osState = OSState::Running;
-            // }
 
             const ImGuiViewport* vp = ImGui::GetMainViewport();
             ImGui::SetNextWindowPos(vp->WorkPos);
@@ -130,10 +129,11 @@ int main() {
                     if (elapsed >= biosSequence[i].delay) {
                         ImGui::TextColored(biosSequence[i].color, "%s", biosSequence[i].text);
                         
-                        if (std::strcmp(biosSequence[i].text, "CSOPESY S04 (C) 2026 CSOPESY Megatrends, Inc.") == 0 ||
+                        if (std::strcmp(biosSequence[i].text, "Group 4 - CSOPESY S04 (C) 2026 CSOPESY Megatrends, Inc.") == 0 ||
                             std::strcmp(biosSequence[i].text, "Testing System Memory... 8192MB OK") == 0 ||
-                            std::strcmp(biosSequence[i].text, "Speed: 3800 MHz  //  Cores: 8  //  Threads: 16") == 0 ||
-                            std::strcmp(biosSequence[i].text, "  [Target 1] USB: Generic Boot Media Found") == 0) {
+                            std::strcmp(biosSequence[i].text, "BIOS Version: CSOPESY Custom BIOS v1.0") == 0 ||
+                            std::strcmp(biosSequence[i].text, "  [Target 1] USB: Generic Boot Media Found") == 0 ||
+                            std::strcmp(biosSequence[i].text, "Booting CSOPESY OS...") == 0) {
                             ImGui::Dummy(ImVec2(0.0f, px(20.0f))); // vertical space
                         }
                     }
@@ -196,20 +196,40 @@ int main() {
     return 0;
 }
 
-static void LoadFonts(ImGuiIO& io, float sizePx) {
-    const char* paths[] = {
-        "C:/Windows/Fonts/segoeui.ttf",
-        "C:/Windows/Fonts/arial.ttf",
-    };
-    for (const char* p : paths) {
-        if (FILE* f = std::fopen(p, "rb")) {
+static void LoadFonts(ImGuiIO& io, float sizePx, OSState osState) {
+    io.Fonts->Clear();
+
+    bool fontLoaded = false;
+    if (osState == OSState::Booting) {
+        if (FILE* f = std::fopen("C:/Windows/Fonts/cour.ttf", "rb")) {
             std::fclose(f);
-            if (io.Fonts->AddFontFromFileTTF(p, sizePx)) return;
+            if (io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/cour.ttf", sizePx)) {
+                fontLoaded = true;
+            }
+        }
+    } else {
+        const char* paths[] = {
+            "C:/Windows/Fonts/segoeui.ttf",
+            "C:/Windows/Fonts/arial.ttf",
+        };
+
+        for (const char* p : paths) {
+            if (FILE* f = std::fopen(p, "rb")) {
+                std::fclose(f);
+                if (io.Fonts->AddFontFromFileTTF(p, sizePx)) {
+                    fontLoaded = true;
+                    break; 
+                }
+            }
         }
     }
+
     ImFontConfig cfg;
     cfg.SizePixels = sizePx;
     io.Fonts->AddFontDefault(&cfg);
+
+    ImGui_ImplOpenGL3_DestroyFontsTexture();
+    ImGui_ImplOpenGL3_CreateFontsTexture();
 }
 
 static void ApplyOSTheme() {
