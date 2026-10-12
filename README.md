@@ -1,4 +1,4 @@
-# 🫃 OS MARQUEE OPERATOR
+# 🫃 DESKTOP-STYLE OS MOCKUP
 - Claro, Stephen Jakobb
 - Infante, Gabriel
 - Omandac, Karl Deejay
