@@ -1,24 +1,14 @@
 {
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "C/C++ Runner: Debug Session",
-      "type": "cppdbg",
-      "request": "launch",
-      "args": [],
-      "stopAtEntry": false,
-      "externalConsole": true,
-      "cwd": "c:/Users/steph/Documents/1-Projects/CPlusPlus/OS-Mock-Up/src",
-      "program": "c:/Users/steph/Documents/1-Projects/CPlusPlus/OS-Mock-Up/src/build/Debug/outDebug",
-      "MIMode": "gdb",
-      "miDebuggerPath": "gdb",
-      "setupCommands": [
+    "version": "0.2.0",
+    "configurations": [
         {
-          "description": "Enable pretty-printing for gdb",
-          "text": "-enable-pretty-printing",
-          "ignoreFailures": true
+            "name": "CMake: Run & Debug Active Target",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}", 
+            "args": [], 
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "CMake: build" 
         }
-      ]
-    }
-  ]
+    ]
 }
